@@ -1,0 +1,22 @@
+{
+    "RootSchemaName":"Contact",
+    "OperationType":0,
+    "Columns":{
+        "Items":{
+            "Id":{
+                "Expression":{
+                    "ExpressionType":0,
+                    "ColumnPath":"Id"
+                }
+            },
+            "Name":{
+                "Expression":{
+                    "ExpressionType":0,
+                    "ColumnPath":"Name"
+                }
+            }
+        }
+    },
+    "allColumns": false,
+    "useLocalization": true
+}
