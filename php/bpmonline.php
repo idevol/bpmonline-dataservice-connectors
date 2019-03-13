@@ -178,6 +178,21 @@ class BPMonline
     }
 
     public function select_json($RootSchemaName, $Columns = array('Name'), $Filters = NULL) {
+        /*
+        $Columns = array('Id',Name','CreatedBy');
+
+        $Filters = array(
+            'logicalOperation' => 0,
+            'items' => array(
+                'Id' => array(
+                    'comparisonType' => 3,
+                    'dataValueType' => 0, 
+                    'value' => '00000000-0000-0000-0000-000000000000'
+                )
+            )
+        );
+        */
+
         $query_url = $this->bpmonline_url . '/0/dataservice/json/SyncReply/SelectQuery';
         $query_data = array(
             'RootSchemaName' => $RootSchemaName,
@@ -302,11 +317,11 @@ class BPMonline
     public function insert_json($RootSchemaName, $ColumnValuesItems = array()) {
         /*
         $ColumnValuesItems = array(
-            'Column' => array(
+            'Column1' => array(
                 'ExpressionType' => 2,
                 'Parameter' => array(
-                    'DataValueType' => 0,
-                    'Value' => 'Valor'
+                    'DataValueType' => 1,
+                    'Value' => 'New Text Value'
                 )
             )
         );
@@ -340,17 +355,30 @@ class BPMonline
 
     public function update_json($RootSchemaName, $ColumnValuesItems = array(), $Filters = NULL) {
         $out = FALSE;
+        
         /*
         $ColumnValuesItems = array(
-            'Column' => array(
+            'Column1' => array(
                 'ExpressionType' => 2,
                 'Parameter' => array(
-                    'DataValueType' => 0,
-                    'Value' => 'Valor'
+                    'DataValueType' => 1,
+                    'Value' => 'New Text Value'
+                )
+            )
+        );
+
+        $Filters = array(
+            'logicalOperation' => 0,
+            'items' => array(
+                'Id' => array(
+                    'comparisonType' => 3,
+                    'dataValueType' => 0, 
+                    'value' => '00000000-0000-0000-0000-000000000000'
                 )
             )
         );
         */
+
         if (!empty($ColumnValuesItems)) {
             $update_url = $this->bpmonline_url . '/0/dataservice/json/reply/UpdateQuery';
             $update_data = array(
@@ -422,9 +450,9 @@ class BPMonline
             }
 
             $update_json = json_encode($update_data);
-            if ($this->log) $this->log_data('bpmonline-update-json-query', $update_json);
+            //if ($this->log) $this->log_data('bpmonline-update-json-query', $update_json);
             $update_result = $this->get($update_url, $update_json);
-            if ($this->log) $this->log_data('bpmonline-update-result-json', $update_result);
+            //if ($this->log) $this->log_data('bpmonline-update-result-json', $update_result);
             $out = $update_result;
             //$out = $update_json;
         }
@@ -438,7 +466,7 @@ class BPMonline
         $update_result = json_decode($update_result_json, true);
         if (json_last_error() == JSON_ERROR_NONE) {
             $out = $update_result;
-            if ($this->log) $this->log_data('bpmonline-update-result-array', var_export($update_result, true));
+            //if ($this->log) $this->log_data('bpmonline-update-result-array', var_export($update_result, true));
         }
         return $out;
     }
