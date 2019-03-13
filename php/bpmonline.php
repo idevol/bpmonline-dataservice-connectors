@@ -337,6 +337,111 @@ class BPMonline
         }
         return $out;
     }
+
+    public function update_json($RootSchemaName, $ColumnValuesItems = array(), $Filters = NULL) {
+        $out = FALSE;
+        /*
+        $ColumnValuesItems = array(
+            'Column' => array(
+                'ExpressionType' => 2,
+                'Parameter' => array(
+                    'DataValueType' => 0,
+                    'Value' => 'Valor'
+                )
+            )
+        );
+        */
+        if (!empty($ColumnValuesItems)) {
+            $update_url = $this->bpmonline_url . '/0/dataservice/json/reply/UpdateQuery';
+            $update_data = array(
+                'RootSchemaName' => $RootSchemaName,
+                'OperationType' => 1,
+                'ColumnValues' => array(
+                    'Items' => $ColumnValuesItems
+                )
+            );
+
+            if (is_array($Filters)) {
+                if (isset($Filters['items'])){
+                    if (count($Filters['items']) > 0) {
+                        if (isset($Filters['logicalOperation'])) {
+                            $LogicalOperatorType = $Filters['logicalOperation'];
+                        }
+                        else {
+                            // AND
+                            $LogicalOperatorType = 0;
+                        }
+                        $update_data['filters'] = array (
+                            'logicalOperation' => 0,
+                            'isEnabled' => true,
+                            'filterType' => 6,
+                            'items' => array (
+                                'CustomFilters' => array (
+                                    'logicalOperation' => $LogicalOperatorType,
+                                    'isEnabled' => true,
+                                    'filterType' => 6,
+                                    'items' => array (),
+                                )
+                            )
+                        );
+
+                        foreach ($Filters['items'] as $Column => $parameter) {
+                            // https://academy.bpmonline.com/api/jscoreapi/7.12.0/index.html?_ga=2.104770368.1168104844.1543204589-1794740920.1543204589#!/api/Terrasoft.core.enums.ComparisonType
+                            if (isset($parameter['comparisonType'])){
+                                $comparisonType = $parameter['comparisonType'];
+                            }
+                            else {
+                                // EQUAL
+                                $comparisonType = 3;
+                            }
+                            $update_data['filters']['items']['CustomFilters']['items'] = array_merge(
+                                $update_data['filters']['items']['CustomFilters']['items'],
+                                array(
+                                    'customFilter' . $Column . '_PHP' => array (
+                                        'filterType' => 1,
+                                        'comparisonType' => $comparisonType,
+                                        'isEnabled' => true,
+                                        'trimDateTimeParameterToDate' => false,
+                                        'leftExpression' => array (
+                                            'expressionType' => 0,
+                                            'columnPath' => $Column,
+                                        ),
+                                        'rightExpression' => array (
+                                            'expressionType' => 2,
+                                            'parameter' => array (
+                                                'dataValueType' => $parameter['dataValueType'],
+                                                'value' => $parameter['value'],
+                                            ),
+                                        ),
+                                    ),
+                                )
+                            );
+                        }
+                    }
+                }
+            }
+
+            $update_json = json_encode($update_data);
+            if ($this->log) $this->log_data('bpmonline-update-json-query', $update_json);
+            $update_result = $this->get($update_url, $update_json);
+            if ($this->log) $this->log_data('bpmonline-update-result-json', $update_result);
+            $out = $update_result;
+            //$out = $update_json;
+        }
+
+        return $out;
+    }
+
+    public function update($RootSchemaName, $ColumnValuesItems = array(), $Filters = NULL){
+        $out = FALSE;
+        $update_result_json = $this->update_json($RootSchemaName, $ColumnValuesItems, $Filters);
+        $update_result = json_decode($update_result_json, true);
+        if (json_last_error() == JSON_ERROR_NONE) {
+            $out = $update_result;
+            if ($this->log) $this->log_data('bpmonline-update-result-array', var_export($update_result, true));
+        }
+        return $out;
+    }
 }
 
 //$bpmonline = new BPMonline();
