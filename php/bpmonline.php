@@ -193,8 +193,8 @@ class BPMonline
         );
         */
 
-        $query_url = $this->bpmonline_url . '/0/dataservice/json/SyncReply/SelectQuery';
-        $query_data = array(
+        $select_url = $this->bpmonline_url . '/0/dataservice/json/SyncReply/SelectQuery';
+        $select_data = array(
             'RootSchemaName' => $RootSchemaName,
             'OperationType' => 0,
             'Columns' => array(
@@ -206,8 +206,8 @@ class BPMonline
 
         foreach($Columns as &$Column){
             if ($Column == 'Name'){
-                $query_data['Columns']['Items'] = array_merge(
-                    $query_data['Columns']['Items'], 
+                $select_data['Columns']['Items'] = array_merge(
+                    $select_data['Columns']['Items'], 
                     array(
                         $Column => array(
                             'OrderDirection' => 1,
@@ -220,8 +220,8 @@ class BPMonline
                 );
             }
             else {
-                $query_data['Columns']['Items'] = array_merge(
-                    $query_data['Columns']['Items'], 
+                $select_data['Columns']['Items'] = array_merge(
+                    $select_data['Columns']['Items'], 
                     array(
                         $Column => array(
                             'Expression' => array(
@@ -244,7 +244,7 @@ class BPMonline
                         // AND
                         $LogicalOperatorType = 0;
                     }
-                    $query_data['filters'] = array (
+                    $select_data['filters'] = array (
                         'logicalOperation' => 0,
                         'isEnabled' => true,
                         'filterType' => 6,
@@ -267,8 +267,8 @@ class BPMonline
                             // EQUAL
                             $comparisonType = 3;
                         }
-                        $query_data['filters']['items']['CustomFilters']['items'] = array_merge(
-                            $query_data['filters']['items']['CustomFilters']['items'],
+                        $select_data['filters']['items']['CustomFilters']['items'] = array_merge(
+                            $select_data['filters']['items']['CustomFilters']['items'],
                             array(
                                 'customFilter' . $Column . '_PHP' => array (
                                     'filterType' => 1,
@@ -294,22 +294,22 @@ class BPMonline
             }
         }
 
-        //if ($this->debug) error_log('BPMonline\\schema query_data: ' . var_export($query_data, TRUE));
+        //if ($this->debug) error_log('BPMonline\\schema query_data: ' . var_export($select_data, TRUE));
 
-        $query_json = json_encode($query_data);
-        //if ($this->log) $this->log_data('bpmonline-select-query-json', $query_json);
-        $query_result = $this->get($query_url, $query_json);
-        //if ($this->log) $this->log_data('bpmonline-select-result-json', $query_result);
-        return $query_result;
+        $select_json = json_encode($select_data);
+        //if ($this->log) $this->log_data('bpmonline-select-query-json', $select_json);
+        $select_result = $this->get($select_url, $select_json);
+        //if ($this->log) $this->log_data('bpmonline-select-result-json', $select_result);
+        return $select_result;
     }
 
     public function select($RootSchemaName, $Columns = array('Name'), $Filters = NULL) {
         $out = FALSE;
         $select_json = $this->select_json($RootSchemaName, $Columns, $Filters);
-        $select = json_decode($select_json, true);
+        $select_result = json_decode($select_json, true);
         if (json_last_error() == JSON_ERROR_NONE) {
-            $out = $select;
-            //if ($this->log) $this->log_data('bpmonline-select-result-array', var_export($select, true));
+            $out = $select_result;
+            //if ($this->log) $this->log_data('bpmonline-select-result-array', var_export($select_result, true));
         }
         return $out;
     }
