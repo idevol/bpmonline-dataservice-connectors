@@ -22,32 +22,32 @@ class BPMonline:
     
     def select_json(self, RootSchemaName, Columns, Filters = None):
         select_json = {
-            "RootSchemaName":RootSchemaName,
-            "OperationType":0,
-            "Columns":{
-                "Items":{
-                    "Id":{
-                        "Expression":{
-                            "ExpressionType":0,
-                            "ColumnPath":"Id"
+            'RootSchemaName':RootSchemaName,
+            'OperationType':0,
+            'Columns':{
+                'Items':{
+                    'Id':{
+                        'Expression':{
+                            'ExpressionType':0,
+                            'ColumnPath':'Id'
                         }
                     }
                 }
             },
-            "allColumns": False,
-            "useLocalization": True
+            'allColumns': False,
+            'useLocalization': True
         }
 
         for column in Columns:
-            select_json["Columns"]["Items"].update({
+            select_json['Columns']['Items'].update({
                 column:{
-                    "caption": "",
-                    "orderDirection": 0,
-                    "orderPosition": -1,
-                    "isVisible": True,
-                    "Expression":{
-                        "ExpressionType":0,
-                        "ColumnPath":column
+                    'caption': '',
+                    'orderDirection': 0,
+                    'orderPosition': -1,
+                    'isVisible': True,
+                    'Expression':{
+                        'ExpressionType':0,
+                        'ColumnPath':column
                     }
                 }
             })
@@ -120,5 +120,4 @@ class BPMonline:
     def select(self, RootSchemaName, Columns, Filters = None):
         select_json = self.select_json(RootSchemaName, Columns, Filters)
         return json.loads(select_json)
-    
     
