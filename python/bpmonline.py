@@ -120,3 +120,23 @@ class BPMonline:
     def select(self, RootSchemaName, Columns, Filters = None):
         select_response_json = self.select_json(RootSchemaName, Columns, Filters)
         return json.loads(select_response_json)
+
+    def insert_json(self, RootSchemaName, ColumnValuesItems = {}):
+        insert_url = self.__bpmonline_url + self.__insert_uri
+        headers = {'Content-Type': 'application/json'}
+        headers['BPMCSRF'] = self.__session.cookies.get_dict()['BPMCSRF']
+
+        insert_query = {
+            'RootSchemaName':RootSchemaName,
+            'OperationType':1,
+            'ColumnValues':{
+                'Items':ColumnValuesItems
+            }
+        }
+
+        insert_response = requests.post(insert_url, headers=headers, cookies=self.__session.cookies, json=insert_query)
+        return insert_response.text
+
+    def insert(self, RootSchemaName, ColumnValuesItems = {}):
+        insert_response_json = self.insert_json(RootSchemaName, ColumnValuesItems)
+        return json.loads(insert_response_json)
