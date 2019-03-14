@@ -197,7 +197,7 @@ class BPMonline
         );
         */
 
-        $select_url = $this->bpmonline_url . '/0/dataservice/json/SyncReply/SelectQuery';
+        $select_url = $this->bpmonline_url . $this->select_uri;
         $select_data = array(
             'RootSchemaName' => $RootSchemaName,
             'OperationType' => 0,
@@ -331,7 +331,7 @@ class BPMonline
         );
         */
 
-        $insert_url = $this->bpmonline_url . '/0/dataservice/json/reply/InsertQuery';
+        $insert_url = $this->bpmonline_url . $this->insert_uri;
         $insert_data = array(
             'RootSchemaName' => $RootSchemaName,
             'OperationType' => 1,
@@ -384,7 +384,7 @@ class BPMonline
         */
 
         if (!empty($ColumnValuesItems)) {
-            $update_url = $this->bpmonline_url . '/0/dataservice/json/reply/UpdateQuery';
+            $update_url = $this->bpmonline_url . $this->update_uri;
             $update_data = array(
                 'RootSchemaName' => $RootSchemaName,
                 'OperationType' => 1,
