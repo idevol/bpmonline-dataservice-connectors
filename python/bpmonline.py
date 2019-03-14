@@ -4,9 +4,14 @@ import json
 
 class BPMonline:
     __bpmonline_url = 'https://myproduct.bpmonline.com'
-    __login_uri = '/ServiceModel/AuthService.svc/Login'
+    
     __login_credentials = {'UserName': 'Supervisor', 'UserPassword': 'secret'}
     __session = None
+    
+    __login_uri  = '/ServiceModel/AuthService.svc/Login'
+    __select_uri = '/0/dataservice/json/SyncReply/SelectQuery'
+    __insert_uri = '/0/dataservice/json/reply/InsertQuery'
+    __update_uri = '/0/dataservice/json/reply/UpdateQuery'
 
     def __init__(self):
         self.__login()
