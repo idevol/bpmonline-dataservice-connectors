@@ -21,7 +21,7 @@ class BPMonline:
         self.__session = requests.post(self.__bpmonline_url + self.__login_uri, headers=headers, json=self.__login_credentials)
     
     def select_json(self, RootSchemaName, Columns, Filters = None):
-        select_json = {
+        select_query = {
             'RootSchemaName':RootSchemaName,
             'OperationType':0,
             'Columns':{
@@ -39,7 +39,7 @@ class BPMonline:
         }
 
         for column in Columns:
-            select_json['Columns']['Items'].update({
+            select_query['Columns']['Items'].update({
                 column:{
                     'caption': '',
                     'orderDirection': 0,
@@ -61,7 +61,7 @@ class BPMonline:
                         if ('logicalOperation' in Filters):
                             LogicalOperatorType = Filters['logicalOperation']
                         
-                        select_json['filters'] = {
+                        select_query['filters'] = {
                             'logicalOperation':0,
                             'isEnabled':True,
                             'filterType':6,
@@ -89,7 +89,7 @@ class BPMonline:
                             if ('value' in parameter):
                                 value = parameter['value']
                             
-                            select_json['filters']['items']['CustomFilters']['items'].update({
+                            select_query['filters']['items']['CustomFilters']['items'].update({
                                 'customFilter' + Column + '_PHP':{
                                     'filterType':1,
                                     'comparisonType':comparisonType,
@@ -114,10 +114,9 @@ class BPMonline:
         headers = {'Content-Type': 'application/json'}
         headers['BPMCSRF'] = self.__session.cookies.get_dict()['BPMCSRF']
 
-        select_response = requests.post(select_url, headers=headers, cookies=self.__session.cookies, json=select_json)
+        select_response = requests.post(select_url, headers=headers, cookies=self.__session.cookies, json=select_query)
         return select_response.text
     
     def select(self, RootSchemaName, Columns, Filters = None):
-        select_json = self.select_json(RootSchemaName, Columns, Filters)
-        return json.loads(select_json)
-    
+        select_response_json = self.select_json(RootSchemaName, Columns, Filters)
+        return json.loads(select_response_json)
