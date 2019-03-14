@@ -1,18 +1,41 @@
 <?php
 
+/**
+* BPMonline is a class to query a bpm'online product via DataService
+*
+* BPMonline is a class to build a JSON document for run queries to a
+* bpm'online product via DataService (web service).
+*
+* Example usage:
+* $bpmonline = new BPMonline();
+* echo $bpmonline->select_json('Contact');
+*
+* @package  bpmonline-dataservice-connectors
+* @author   Saul Diaz
+* @version  $Revision: 0.1 $
+* @access   public
+* @see      https://github.com/idevol/bpmonline-dataservice-connectors
+*/
 class BPMonline
 {
+    // Debug & Log
     private $debug = FALSE;
     private $log = FALSE;
+
+    // bpm'online URL product
     private $bpmonline_url = 'https://myproduct.bpmonline.com';
-    private $login_uri = '/ServiceModel/AuthService.svc/Login';
+
+    // Login configuration
     private $login_credentials = array('UserName' => 'Supervisor', 'UserPassword' => 'secret');
     private $login_cookie_filename = 'bpmonline.session.cookie';
-
+    
+    // bpm'online DataService URI's web service (API)
+    private $login_uri  = '/ServiceModel/AuthService.svc/Login';
     private $select_uri = '/0/dataservice/json/SyncReply/SelectQuery';
     private $insert_uri = '/0/dataservice/json/reply/InsertQuery';
     private $update_uri = '/0/dataservice/json/reply/UpdateQuery';
 
+    
     function __construct() {
         $this->login_cookie();
     }
@@ -476,6 +499,4 @@ class BPMonline
     }
 }
 
-//$bpmonline = new BPMonline();
-//echo $bpmonline->select_json('Contact');
 ?>
