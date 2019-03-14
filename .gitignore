@@ -1,4 +1,6 @@
 .DS_Store
 *.swp
+*.pyc
 /log/
 bpmonline.session.cookie
+/__pycache__/
