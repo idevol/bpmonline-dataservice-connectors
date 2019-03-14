@@ -9,6 +9,10 @@ class BPMonline
     private $login_credentials = array('UserName' => 'Supervisor', 'UserPassword' => 'secret');
     private $login_cookie_filename = 'bpmonline.session.cookie';
 
+    private $select_uri = '/0/dataservice/json/SyncReply/SelectQuery';
+    private $insert_uri = '/0/dataservice/json/reply/InsertQuery';
+    private $update_uri = '/0/dataservice/json/reply/UpdateQuery';
+
     function __construct() {
         $this->login_cookie();
     }
