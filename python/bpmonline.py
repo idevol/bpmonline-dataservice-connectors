@@ -13,7 +13,7 @@ class BPMonline:
 
     def __login(self):
         headers = {'Content-Type': 'application/json'}
-        self.session = requests.post(self.__bpmonline_url + self.__login_uri, headers=headers, json=self.__login_credentials)
+        self.__session = requests.post(self.__bpmonline_url + self.__login_uri, headers=headers, json=self.__login_credentials)
     
     def select(self, RootSchemaName, Columns):
         select_json = {
