@@ -151,3 +151,106 @@ class BPMonline:
     def insert(self, RootSchemaName, ColumnValuesItems = {}):
         insert_response_json = self.insert_json(RootSchemaName, ColumnValuesItems)
         return json.loads(insert_response_json)
+    
+    def update_json(self, RootSchemaName, ColumnValuesItems = {}, Filters = None):
+        """
+        ColumnValuesItems:{
+            'Column1':{
+                'ExpressionType':2,
+                'Parameter':{
+                    'DataValueType':1,
+                    'Value':'New Text Value'
+                }
+            }
+        }
+
+        Filters:{
+            'logicalOperation':0,
+            'items':{
+                'Id':{
+                    'comparisonType':3,
+                    'dataValueType':0, 
+                    'value':'00000000-0000-0000-0000-000000000000'
+                }
+            }
+        }
+        """
+
+        if not ColumnValuesItems:
+            update_query = {
+                'RootSchemaName':RootSchemaName,
+                'OperationType':1,
+                'ColumnValues':{
+                    'Items':ColumnValuesItems
+                }
+            }
+
+            if (Filters != None):
+                if (Filters['items'] != None):
+                    if (isinstance(Filters['items'], dict)):
+                        if (len(Filters['items']) > 0):
+
+                            LogicalOperatorType = 0
+                            if ('logicalOperation' in Filters):
+                                LogicalOperatorType = Filters['logicalOperation']
+                            
+                            update_query['filters'] = {
+                                'logicalOperation':0,
+                                'isEnabled':True,
+                                'filterType':6,
+                                'items':{
+                                    'CustomFilters':{
+                                        'logicalOperation':LogicalOperatorType,
+                                        'isEnabled':True,
+                                        'filterType':6,
+                                        'items':{}
+                                    }
+                                }
+                            }
+
+                            for Column, parameter in Filters['items'].items():
+                                # EQUAL
+                                comparisonType = 3
+                                if ('comparisonType' in parameter):
+                                    comparisonType = parameter['comparisonType']
+
+                                dataValueType = 0
+                                if ('dataValueType' in parameter):
+                                    dataValueType = parameter['dataValueType']
+
+                                value = ''
+                                if ('value' in parameter):
+                                    value = parameter['value']
+                                
+                                update_query['filters']['items']['CustomFilters']['items'].update({
+                                    'customFilter' + Column + '_PHP':{
+                                        'filterType':1,
+                                        'comparisonType':comparisonType,
+                                        'isEnabled':True,
+                                        'trimDateTimeParameterToDate':False,
+                                        'leftExpression':{
+                                            'expressionType':0,
+                                            'columnPath':Column
+                                        },
+                                        'rightExpression':{
+                                            'expressionType':2,
+                                            'parameter':{
+                                                'dataValueType':dataValueType,
+                                                'value':value
+                                            }
+                                        }
+                                    }
+                                })
+
+            update_url = self.__bpmonline_url + self.__update_uri
+            headers = {'Content-Type': 'application/json'}
+            headers['BPMCSRF'] = self.__session.cookies.get_dict()['BPMCSRF']
+            
+            update_response = requests.post(update_url, headers=headers, cookies=self.__session.cookies, json=update_query)
+            return update_response.text
+        else:
+            return None
+
+    def update(self, RootSchemaName, ColumnValuesItems = {}, Filters = None):
+        update_response_json = self.update_json(RootSchemaName, ColumnValuesItems, Filters)
+        return json.loads(update_response_json)
