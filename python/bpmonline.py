@@ -121,9 +121,17 @@ class BPMonline:
         return json.loads(select_response_json)
 
     def insert_json(self, RootSchemaName, ColumnValuesItems = {}):
-        insert_url = self.__bpmonline_url + self.__insert_uri
-        headers = {'Content-Type': 'application/json'}
-        headers['BPMCSRF'] = self.__session.cookies.get_dict()['BPMCSRF']
+        """
+        ColumnValuesItems:{
+            'Column1':{
+                'ExpressionType':2,
+                'Parameter':{
+                    'DataValueType':1,
+                    'Value':'New Text Value'
+                }
+            }
+        }
+        """
 
         insert_query = {
             'RootSchemaName':RootSchemaName,
@@ -132,6 +140,10 @@ class BPMonline:
                 'Items':ColumnValuesItems
             }
         }
+
+        insert_url = self.__bpmonline_url + self.__insert_uri
+        headers = {'Content-Type': 'application/json'}
+        headers['BPMCSRF'] = self.__session.cookies.get_dict()['BPMCSRF']
 
         insert_response = requests.post(insert_url, headers=headers, cookies=self.__session.cookies, json=insert_query)
         return insert_response.text
