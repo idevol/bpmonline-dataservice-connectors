@@ -108,8 +108,7 @@ class BPMonline:
                                     }
                                 }
                             })
-
-        
+                            
         select_url = self.__bpmonline_url + self.__select_uri
         headers = {'Content-Type': 'application/json'}
         headers['BPMCSRF'] = self.__session.cookies.get_dict()['BPMCSRF']
