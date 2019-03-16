@@ -18,197 +18,87 @@ class BPMonline:
 
     __session = None
     __session_create = None
-    __header = {'Content-Type': 'application/json'}
+    __session_header = {}
+    __json_header = {'Content-Type': 'application/json'}
 
     def __init__(self):
         self.__session_validator()
 
     def __login(self):
-        self.__session = requests.post(self.__bpmonline_url + self.__login_uri, headers=self.__header, json=self.__login_credentials)
-        self.__header['BPMCSRF'] = self.__session.cookies.get_dict()['BPMCSRF']
-        self.__session_create = datetime.datetime.now()
-        filehandler = open(self.__login_cookie_filename, 'wb') 
-        pickle.dump(self.__session, filehandler)
-        filehandler.close
+        out = False
+        self.__session = requests.post(self.__bpmonline_url + self.__login_uri, headers=self.__json_header, json=self.__login_credentials)
+        if 'Content-Type' in self.__session.headers:
+            if 'application/json' in self.__session.headers['Content-Type']:
+                if 'BPMCSRF' in self.__session.cookies.get_dict():
+                    self.__session_header = self.__json_header
+                    self.__session_header.update({'BPMCSRF': self.__session.cookies.get_dict()['BPMCSRF']})
+                    self.__session_create = datetime.datetime.now()
+                    filehandler = open(self.__login_cookie_filename, 'wb') 
+                    pickle.dump(self.__session, filehandler)
+                    filehandler.close
+                    out = True
+                else:
+                    self.__session = False
+                    out = False
+        return out
 
     def __session_lifetime(self):
+        if self.__session == False:
+            return 0
         if self.__session_create != None:
             return (datetime.datetime.now() - self.__session_create).total_seconds()
         else:
             return 1000
 
     def __session_validator(self):
-        cookie_file = Path(self.__login_cookie_filename)
-        if cookie_file.is_file():
-            if (self.__session_lifetime() > 60):
-                self.__login()
+        out = False
+        if self.__session != False:
+            cookie_file = Path(self.__login_cookie_filename)
+            if cookie_file.is_file():
+                if (self.__session_lifetime() > 60):
+                    if self.__login():
+                        out = True
+                else:
+                    filehandler = open(self.__login_cookie_filename, 'rb') 
+                    self.__session = pickle.load(filehandler)
+                    out = True
             else:
-                filehandler = open(self.__login_cookie_filename, 'rb') 
-                self.__session = pickle.load(filehandler)
-        else:
-            self.__login()
+                if self.__login():
+                    out = True
+        return out
     
     def select_json(self, RootSchemaName, Columns, Filters = None):
-        self.__session_validator()
-        select_query = {
-            'RootSchemaName':RootSchemaName,
-            'OperationType':0,
-            'Columns':{
-                'Items':{
-                    'Id':{
-                        'Expression':{
-                            'ExpressionType':0,
-                            'ColumnPath':'Id'
-                        }
-                    }
-                }
-            },
-            'allColumns': False,
-            'useLocalization': True
-        }
-
-        for column in Columns:
-            select_query['Columns']['Items'].update({
-                column:{
-                    'caption': '',
-                    'orderDirection': 0,
-                    'orderPosition': -1,
-                    'isVisible': True,
-                    'Expression':{
-                        'ExpressionType':0,
-                        'ColumnPath':column
-                    }
-                }
-            })
-
-        if (Filters != None):
-            if (Filters['items'] != None):
-                if (isinstance(Filters['items'], dict)):
-                    if (len(Filters['items']) > 0):
-
-                        LogicalOperatorType = 0
-                        if ('logicalOperation' in Filters):
-                            LogicalOperatorType = Filters['logicalOperation']
-                        
-                        select_query['filters'] = {
-                            'logicalOperation':0,
-                            'isEnabled':True,
-                            'filterType':6,
-                            'items':{
-                                'CustomFilters':{
-                                    'logicalOperation':LogicalOperatorType,
-                                    'isEnabled':True,
-                                    'filterType':6,
-                                    'items':{}
-                                }
+        if self.__session_validator():
+            select_query = {
+                'RootSchemaName':RootSchemaName,
+                'OperationType':0,
+                'Columns':{
+                    'Items':{
+                        'Id':{
+                            'Expression':{
+                                'ExpressionType':0,
+                                'ColumnPath':'Id'
                             }
                         }
-
-                        for Column, parameter in Filters['items'].items():
-                            # EQUAL
-                            comparisonType = 3
-                            if ('comparisonType' in parameter):
-                                comparisonType = parameter['comparisonType']
-
-                            dataValueType = 0
-                            if ('dataValueType' in parameter):
-                                dataValueType = parameter['dataValueType']
-
-                            value = ''
-                            if ('value' in parameter):
-                                value = parameter['value']
-                            
-                            select_query['filters']['items']['CustomFilters']['items'].update({
-                                'customFilter' + Column + '_PHP':{
-                                    'filterType':1,
-                                    'comparisonType':comparisonType,
-                                    'isEnabled':True,
-                                    'trimDateTimeParameterToDate':False,
-                                    'leftExpression':{
-                                        'expressionType':0,
-                                        'columnPath':Column
-                                    },
-                                    'rightExpression':{
-                                        'expressionType':2,
-                                        'parameter':{
-                                            'dataValueType':dataValueType,
-                                            'value':value
-                                        }
-                                    }
-                                }
-                            })
-
-        select_url = self.__bpmonline_url + self.__select_uri
-        select_response = requests.post(select_url, headers=self.__header, cookies=self.__session.cookies, json=select_query)
-        return select_response.text
-    
-    def select(self, RootSchemaName, Columns, Filters = None):
-        select_response_json = self.select_json(RootSchemaName, Columns, Filters)
-        return json.loads(select_response_json)
-
-    def insert_json(self, RootSchemaName, ColumnValuesItems = {}):
-        self.__session_validator()
-        """
-        ColumnValuesItems:{
-            'Column1':{
-                'ExpressionType':2,
-                'Parameter':{
-                    'DataValueType':1,
-                    'Value':'New Text Value'
-                }
+                    }
+                },
+                'allColumns': False,
+                'useLocalization': True
             }
-        }
-        """
 
-        insert_query = {
-            'RootSchemaName':RootSchemaName,
-            'OperationType':1,
-            'ColumnValues':{
-                'Items':ColumnValuesItems
-            }
-        }
-
-        insert_url = self.__bpmonline_url + self.__insert_uri
-        insert_response = requests.post(insert_url, headers=self.__header, cookies=self.__session.cookies, json=insert_query)
-        return insert_response.text
-
-    def insert(self, RootSchemaName, ColumnValuesItems = {}):
-        insert_response_json = self.insert_json(RootSchemaName, ColumnValuesItems)
-        return json.loads(insert_response_json)
-    
-    def update_json(self, RootSchemaName, ColumnValuesItems = {}, Filters = None):
-        self.__session_validator()
-        """
-        ColumnValuesItems:{
-            'Column1':{
-                'ExpressionType':2,
-                'Parameter':{
-                    'DataValueType':1,
-                    'Value':'New Text Value'
-                }
-            }
-        }
-
-        Filters:{
-            'logicalOperation':0,
-            'items':{
-                'Id':{
-                    'comparisonType':3,
-                    'dataValueType':0, 
-                    'value':'00000000-0000-0000-0000-000000000000'
-                }
-            }
-        }
-        """
-
-        if not ColumnValuesItems:
-            update_query = {
-                'RootSchemaName':RootSchemaName,
-                'OperationType':1,
-                'ColumnValues':{
-                    'Items':ColumnValuesItems
-                }
-            }
+            for column in Columns:
+                select_query['Columns']['Items'].update({
+                    column:{
+                        'caption': '',
+                        'orderDirection': 0,
+                        'orderPosition': -1,
+                        'isVisible': True,
+                        'Expression':{
+                            'ExpressionType':0,
+                            'ColumnPath':column
+                        }
+                    }
+                })
 
             if (Filters != None):
                 if (Filters['items'] != None):
@@ -219,7 +109,7 @@ class BPMonline:
                             if ('logicalOperation' in Filters):
                                 LogicalOperatorType = Filters['logicalOperation']
                             
-                            update_query['filters'] = {
+                            select_query['filters'] = {
                                 'logicalOperation':0,
                                 'isEnabled':True,
                                 'filterType':6,
@@ -247,7 +137,7 @@ class BPMonline:
                                 if ('value' in parameter):
                                     value = parameter['value']
                                 
-                                update_query['filters']['items']['CustomFilters']['items'].update({
+                                select_query['filters']['items']['CustomFilters']['items'].update({
                                     'customFilter' + Column + '_PHP':{
                                         'filterType':1,
                                         'comparisonType':comparisonType,
@@ -267,11 +157,146 @@ class BPMonline:
                                     }
                                 })
 
-            update_url = self.__bpmonline_url + self.__update_uri
-            update_response = requests.post(update_url, headers=self.__header, cookies=self.__session.cookies, json=update_query)
-            return update_response.text
+            select_url = self.__bpmonline_url + self.__select_uri
+            select_response = requests.post(select_url, headers=self.__session_header, cookies=self.__session.cookies, json=select_query)
+            return select_response.text
         else:
-            return None
+            return '{}'
+    
+    def select(self, RootSchemaName, Columns, Filters = None):
+        select_response_json = self.select_json(RootSchemaName, Columns, Filters)
+        return json.loads(select_response_json)
+
+    def insert_json(self, RootSchemaName, ColumnValuesItems = {}):
+        if self.__session_validator():
+            """
+            ColumnValuesItems:{
+                'Column1':{
+                    'ExpressionType':2,
+                    'Parameter':{
+                        'DataValueType':1,
+                        'Value':'New Text Value'
+                    }
+                }
+            }
+            """
+
+            insert_query = {
+                'RootSchemaName':RootSchemaName,
+                'OperationType':1,
+                'ColumnValues':{
+                    'Items':ColumnValuesItems
+                }
+            }
+
+            insert_url = self.__bpmonline_url + self.__insert_uri
+            insert_response = requests.post(insert_url, headers=self.__session_header, cookies=self.__session.cookies, json=insert_query)
+            return insert_response.text
+        else:
+            return '{}'
+
+    def insert(self, RootSchemaName, ColumnValuesItems = {}):
+        insert_response_json = self.insert_json(RootSchemaName, ColumnValuesItems)
+        return json.loads(insert_response_json)
+    
+    def update_json(self, RootSchemaName, ColumnValuesItems = {}, Filters = None):
+        if self.__session_validator():
+            """
+            ColumnValuesItems:{
+                'Column1':{
+                    'ExpressionType':2,
+                    'Parameter':{
+                        'DataValueType':1,
+                        'Value':'New Text Value'
+                    }
+                }
+            }
+
+            Filters:{
+                'logicalOperation':0,
+                'items':{
+                    'Id':{
+                        'comparisonType':3,
+                        'dataValueType':0, 
+                        'value':'00000000-0000-0000-0000-000000000000'
+                    }
+                }
+            }
+            """
+
+            if not ColumnValuesItems:
+                update_query = {
+                    'RootSchemaName':RootSchemaName,
+                    'OperationType':1,
+                    'ColumnValues':{
+                        'Items':ColumnValuesItems
+                    }
+                }
+
+                if (Filters != None):
+                    if (Filters['items'] != None):
+                        if (isinstance(Filters['items'], dict)):
+                            if (len(Filters['items']) > 0):
+
+                                LogicalOperatorType = 0
+                                if ('logicalOperation' in Filters):
+                                    LogicalOperatorType = Filters['logicalOperation']
+                                
+                                update_query['filters'] = {
+                                    'logicalOperation':0,
+                                    'isEnabled':True,
+                                    'filterType':6,
+                                    'items':{
+                                        'CustomFilters':{
+                                            'logicalOperation':LogicalOperatorType,
+                                            'isEnabled':True,
+                                            'filterType':6,
+                                            'items':{}
+                                        }
+                                    }
+                                }
+
+                                for Column, parameter in Filters['items'].items():
+                                    # EQUAL
+                                    comparisonType = 3
+                                    if ('comparisonType' in parameter):
+                                        comparisonType = parameter['comparisonType']
+
+                                    dataValueType = 0
+                                    if ('dataValueType' in parameter):
+                                        dataValueType = parameter['dataValueType']
+
+                                    value = ''
+                                    if ('value' in parameter):
+                                        value = parameter['value']
+                                    
+                                    update_query['filters']['items']['CustomFilters']['items'].update({
+                                        'customFilter' + Column + '_PHP':{
+                                            'filterType':1,
+                                            'comparisonType':comparisonType,
+                                            'isEnabled':True,
+                                            'trimDateTimeParameterToDate':False,
+                                            'leftExpression':{
+                                                'expressionType':0,
+                                                'columnPath':Column
+                                            },
+                                            'rightExpression':{
+                                                'expressionType':2,
+                                                'parameter':{
+                                                    'dataValueType':dataValueType,
+                                                    'value':value
+                                                }
+                                            }
+                                        }
+                                    })
+
+                update_url = self.__bpmonline_url + self.__update_uri
+                update_response = requests.post(update_url, headers=self.__session_header, cookies=self.__session.cookies, json=update_query)
+                return update_response.text
+            else:
+                return '{}'
+        else:
+            return '{}'
 
     def update(self, RootSchemaName, ColumnValuesItems = {}, Filters = None):
         update_response_json = self.update_json(RootSchemaName, ColumnValuesItems, Filters)
