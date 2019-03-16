@@ -1,12 +1,18 @@
 # -*- coding: UTF-8 -*-
+import datetime
 import requests
 import json
+import pickle
+from pathlib import Path
 
 class BPMonline:
     __bpmonline_url = 'https://myproduct.bpmonline.com'
     
+    __login_cookie_filename = 'bpmonline.session.cookie'
+    
     __login_credentials = {'UserName': 'Supervisor', 'UserPassword': 'secret'}
     __session = None
+    __session_create = None
     
     __login_uri  = '/ServiceModel/AuthService.svc/Login'
     __select_uri = '/0/dataservice/json/SyncReply/SelectQuery'
@@ -14,13 +20,32 @@ class BPMonline:
     __update_uri = '/0/dataservice/json/reply/UpdateQuery'
 
     def __init__(self):
-        self.__login()
+        self.__session_validator()
 
     def __login(self):
         headers = {'Content-Type': 'application/json'}
         self.__session = requests.post(self.__bpmonline_url + self.__login_uri, headers=headers, json=self.__login_credentials)
+        self.__session_create = datetime.datetime.now()
+        filehandler = open(self.__login_cookie_filename, 'w') 
+        pickle.dump(self.__session, filehandler)
+        filehandler.close
+
+    def __session_lifetime(self):
+        return (datetime.datetime.now() - self.__session_create).total_seconds()
+
+    def __session_validator(self):
+        cookie_file = Path(self.__login_cookie_filename)
+        if cookie_file.is_file():
+            if (self.__session_lifetime() > 60):
+                self.__login()
+            else:
+                filehandler = open(self.__login_cookie_filename, 'r') 
+                self.__session = pickle.load(filehandler)
+        else:
+            self.__login()
     
     def select_json(self, RootSchemaName, Columns, Filters = None):
+        self.__session_validator()
         select_query = {
             'RootSchemaName':RootSchemaName,
             'OperationType':0,
@@ -108,7 +133,7 @@ class BPMonline:
                                     }
                                 }
                             })
-                            
+
         select_url = self.__bpmonline_url + self.__select_uri
         headers = {'Content-Type': 'application/json'}
         headers['BPMCSRF'] = self.__session.cookies.get_dict()['BPMCSRF']
@@ -121,6 +146,7 @@ class BPMonline:
         return json.loads(select_response_json)
 
     def insert_json(self, RootSchemaName, ColumnValuesItems = {}):
+        self.__session_validator()
         """
         ColumnValuesItems:{
             'Column1':{
@@ -153,6 +179,7 @@ class BPMonline:
         return json.loads(insert_response_json)
     
     def update_json(self, RootSchemaName, ColumnValuesItems = {}, Filters = None):
+        self.__session_validator()
         """
         ColumnValuesItems:{
             'Column1':{
