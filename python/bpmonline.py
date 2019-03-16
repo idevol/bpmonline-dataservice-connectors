@@ -8,9 +8,9 @@ from pathlib import Path
 class BPMonline:
     __bpmonline_url = 'https://myproduct.bpmonline.com'
     
+    __login_credentials = {'UserName': 'Supervisor', 'UserPassword': 'secret'}
     __login_cookie_filename = 'bpmonline.session.cookie'
     
-    __login_credentials = {'UserName': 'Supervisor', 'UserPassword': 'secret'}
     __session = None
     __session_create = None
     
