@@ -11,20 +11,21 @@ class BPMonline:
     __login_credentials = {'UserName': 'Supervisor', 'UserPassword': 'secret'}
     __login_cookie_filename = 'bpmonline.session.cookie'
     
-    __session = None
-    __session_create = None
-    
     __login_uri  = '/ServiceModel/AuthService.svc/Login'
     __select_uri = '/0/dataservice/json/SyncReply/SelectQuery'
     __insert_uri = '/0/dataservice/json/reply/InsertQuery'
     __update_uri = '/0/dataservice/json/reply/UpdateQuery'
 
+    __session = None
+    __session_create = None
+    __header = {'Content-Type': 'application/json'}
+
     def __init__(self):
         self.__session_validator()
 
     def __login(self):
-        headers = {'Content-Type': 'application/json'}
-        self.__session = requests.post(self.__bpmonline_url + self.__login_uri, headers=headers, json=self.__login_credentials)
+        self.__session = requests.post(self.__bpmonline_url + self.__login_uri, headers=self.__header, json=self.__login_credentials)
+        self.__header['BPMCSRF'] = self.__session.cookies.get_dict()['BPMCSRF']
         self.__session_create = datetime.datetime.now()
         filehandler = open(self.__login_cookie_filename, 'wb') 
         pickle.dump(self.__session, filehandler)
@@ -138,10 +139,7 @@ class BPMonline:
                             })
 
         select_url = self.__bpmonline_url + self.__select_uri
-        headers = {'Content-Type': 'application/json'}
-        headers['BPMCSRF'] = self.__session.cookies.get_dict()['BPMCSRF']
-
-        select_response = requests.post(select_url, headers=headers, cookies=self.__session.cookies, json=select_query)
+        select_response = requests.post(select_url, headers=self.__header, cookies=self.__session.cookies, json=select_query)
         return select_response.text
     
     def select(self, RootSchemaName, Columns, Filters = None):
@@ -171,10 +169,7 @@ class BPMonline:
         }
 
         insert_url = self.__bpmonline_url + self.__insert_uri
-        headers = {'Content-Type': 'application/json'}
-        headers['BPMCSRF'] = self.__session.cookies.get_dict()['BPMCSRF']
-
-        insert_response = requests.post(insert_url, headers=headers, cookies=self.__session.cookies, json=insert_query)
+        insert_response = requests.post(insert_url, headers=self.__header, cookies=self.__session.cookies, json=insert_query)
         return insert_response.text
 
     def insert(self, RootSchemaName, ColumnValuesItems = {}):
@@ -273,10 +268,7 @@ class BPMonline:
                                 })
 
             update_url = self.__bpmonline_url + self.__update_uri
-            headers = {'Content-Type': 'application/json'}
-            headers['BPMCSRF'] = self.__session.cookies.get_dict()['BPMCSRF']
-            
-            update_response = requests.post(update_url, headers=headers, cookies=self.__session.cookies, json=update_query)
+            update_response = requests.post(update_url, headers=self.__header, cookies=self.__session.cookies, json=update_query)
             return update_response.text
         else:
             return None
