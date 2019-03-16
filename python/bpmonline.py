@@ -26,12 +26,15 @@ class BPMonline:
         headers = {'Content-Type': 'application/json'}
         self.__session = requests.post(self.__bpmonline_url + self.__login_uri, headers=headers, json=self.__login_credentials)
         self.__session_create = datetime.datetime.now()
-        filehandler = open(self.__login_cookie_filename, 'w') 
+        filehandler = open(self.__login_cookie_filename, 'wb') 
         pickle.dump(self.__session, filehandler)
         filehandler.close
 
     def __session_lifetime(self):
-        return (datetime.datetime.now() - self.__session_create).total_seconds()
+        if self.__session_create != None:
+            return (datetime.datetime.now() - self.__session_create).total_seconds()
+        else:
+            return 1000
 
     def __session_validator(self):
         cookie_file = Path(self.__login_cookie_filename)
@@ -39,7 +42,7 @@ class BPMonline:
             if (self.__session_lifetime() > 60):
                 self.__login()
             else:
-                filehandler = open(self.__login_cookie_filename, 'r') 
+                filehandler = open(self.__login_cookie_filename, 'rb') 
                 self.__session = pickle.load(filehandler)
         else:
             self.__login()
