@@ -470,7 +470,7 @@ class BPMonline
 
         if (!empty($ColumnValuesItems)) {
             $update_url = $this->bpmonline_url . $this->update_uri;
-            $update_data = array(
+            $update_query = array(
                 'RootSchemaName' => $RootSchemaName,
                 'OperationType' => 1,
                 'ColumnValues' => array(
@@ -479,14 +479,14 @@ class BPMonline
             );
 
             if ($Filters != NULL) {
-                $update_data = $this->filters($$update_data, $Filters);
+                $update_query = $this->filters($$update_query, $Filters);
             }
 
-            $update_json = json_encode($update_data);
-            //if ($this->log) $this->log_data('bpmonline-update-json-query', $update_json);
-            $update_result = $this->get($update_url, $update_json);
-            //if ($this->log) $this->log_data('bpmonline-update-result-json', $update_result);
-            $out = $update_result;
+            $update_query_json = json_encode($update_query);
+            //if ($this->log) $this->log_data('bpmonline-update-query-json', $update_query_json);
+            $update_result_json = $this->get($update_url, $update_query_json);
+            //if ($this->log) $this->log_data('bpmonline-update-result-json', $update_result_json);
+            $out = $update_result_json;
             //$out = $update_json;
         }
 
