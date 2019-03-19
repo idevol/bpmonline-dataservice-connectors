@@ -7,13 +7,18 @@ BPMONLINE_URL='https://myproduct.bpmonline.com'
 USER_NAME='Supervisor'
 USER_PASSWORD='secret'
 
-# bpm'online session token, leave empty
-BPMCSRF=''
+# bpm'online DataService URI's web service (API)
+LOGIN_URI='/ServiceModel/AuthService.svc/Login'
+SELECT_URI='/0/dataservice/json/SyncReply/SelectQuery'
+INSERT_URI='/0/dataservice/json/reply/InsertQuery'
+UPDATE_URI='/0/dataservice/json/reply/UpdateQuery'
 
 # Files to be work
 COOKIE_FILE_NAME='bpmonline.session.cookie'
 QUERY_FILE_JSON='contact.query.json'
 
+# bpm'online session token, leave empty
+BPMCSRF=''
 
 # Colors
 RED='\033[0;31m'
@@ -28,7 +33,7 @@ curl \
   --cookie-jar "$COOKIE_FILE_NAME" \
   --header "Content-Type: application/json" \
   --data "{\"UserName\":\"$USER_NAME\",\"UserPassword\":\"$USER_PASSWORD\"}" \
-  "$BPMONLINE_URL/ServiceModel/AuthService.svc/Login"
+  "$BPMONLINE_URL$LOGIN_URI"
 
 
 
@@ -50,7 +55,7 @@ curl \
   --header "BPMCSRF: $BPMCSRF" \
   --header "Content-Type: application/json" \
   --data @"$QUERY_FILE_JSON" \
-  "$BPMONLINE_URL/0/dataservice/json/SyncReply/SelectQuery"
+  "$BPMONLINE_URL$SELECT_URI"
 
 echo -e "\n"
 
