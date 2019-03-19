@@ -204,9 +204,123 @@ class BPMonline
         }
     }
 
+    private function filters($Query = array(), $Filters = NULL) {
+        
+        /*
+        $Filters = '00000000-0000-0000-0000-000000000000';
+        
+        // Or
+        
+        $Filters = array(
+            'logicalOperation' => 0,
+            'items' => array(
+                'Id' => array(
+                    'comparisonType' => 3,
+                    'dataValueType' => 0, 
+                    'value' => '00000000-0000-0000-0000-000000000000'
+                )
+            )
+        );
+        */
+
+        if ($Filters != NULL){
+            if (is_string($Filters)){
+                $Query['filters'] = array(
+                    'items' => array(
+                        'primaryColumnFilter' => array(
+                            'filterType' => 1,
+                            'comparisonType' => 3,
+                            'isEnabled' => true,
+                            'trimDateTimeParameterToDate' => false,
+                            'leftExpression' => array(
+                                'expressionType' => 1,
+                                'functionType' => 1,
+                                'macrosType' => 34
+                            ),
+                            'rightExpression' => array(
+                                'expressionType' => 2,
+                                'parameter' => array(
+                                    'dataValueType' => 0,
+                                    'value' => $Filters
+                                )
+                            )
+                        )
+                    ),
+                    'logicalOperation' => 0,
+                    'isEnabled' => true,
+                    'filterType' => 6
+                );
+            }
+            elseif (is_array($Filters)){
+                if (isset($Filters['items'])){
+                    if (count($Filters['items']) > 0){
+                        if (isset($Filters['logicalOperation'])) {
+                            $LogicalOperatorType = $Filters['logicalOperation'];
+                        }
+                        else {
+                            // AND
+                            $LogicalOperatorType = 0;
+                        }
+                        $Query['filters'] = array (
+                            'logicalOperation' => 0,
+                            'isEnabled' => true,
+                            'filterType' => 6,
+                            'items' => array (
+                                'CustomFilters' => array (
+                                    'logicalOperation' => $LogicalOperatorType,
+                                    'isEnabled' => true,
+                                    'filterType' => 6,
+                                    'items' => array (),
+                                )
+                            )
+                        );
+
+                        foreach ($Filters['items'] as $Column => $parameter) {
+                            // https://academy.bpmonline.com/api/jscoreapi/7.12.0/index.html?_ga=2.104770368.1168104844.1543204589-1794740920.1543204589#!/api/Terrasoft.core.enums.ComparisonType
+                            if (isset($parameter['comparisonType'])){
+                                $comparisonType = $parameter['comparisonType'];
+                            }
+                            else {
+                                // EQUAL
+                                $comparisonType = 3;
+                            }
+                            $Query['filters']['items']['CustomFilters']['items'] = array_merge(
+                                $Query['filters']['items']['CustomFilters']['items'],
+                                array(
+                                    'customFilter' . $Column . '_PHP' => array (
+                                        'filterType' => 1,
+                                        'comparisonType' => $comparisonType,
+                                        'isEnabled' => true,
+                                        'trimDateTimeParameterToDate' => false,
+                                        'leftExpression' => array (
+                                            'expressionType' => 0,
+                                            'columnPath' => $Column,
+                                        ),
+                                        'rightExpression' => array (
+                                            'expressionType' => 2,
+                                            'parameter' => array (
+                                                'dataValueType' => $parameter['dataValueType'],
+                                                'value' => $parameter['value'],
+                                            ),
+                                        ),
+                                    ),
+                                )
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        return $Query;
+    }
+
     public function select_json($RootSchemaName, $Columns = array('Name'), $Filters = NULL) {
         /*
         $Columns = array('Id',Name','CreatedBy');
+
+        $Filters = '00000000-0000-0000-0000-000000000000';
+        
+        // Or
 
         $Filters = array(
             'logicalOperation' => 0,
@@ -261,64 +375,8 @@ class BPMonline
             }
         }
 
-        if (is_array($Filters)) {
-            if (isset($Filters['items'])){
-                if (count($Filters['items']) > 0) {
-                    if (isset($Filters['logicalOperation'])) {
-                        $LogicalOperatorType = $Filters['logicalOperation'];
-                    }
-                    else {
-                        // AND
-                        $LogicalOperatorType = 0;
-                    }
-                    $select_data['filters'] = array (
-                        'logicalOperation' => 0,
-                        'isEnabled' => true,
-                        'filterType' => 6,
-                        'items' => array (
-                            'CustomFilters' => array (
-                                'logicalOperation' => $LogicalOperatorType,
-                                'isEnabled' => true,
-                                'filterType' => 6,
-                                'items' => array (),
-                            )
-                        )
-                    );
-
-                    foreach ($Filters['items'] as $Column => $parameter) {
-                        // https://academy.bpmonline.com/api/jscoreapi/7.12.0/index.html?_ga=2.104770368.1168104844.1543204589-1794740920.1543204589#!/api/Terrasoft.core.enums.ComparisonType
-                        if (isset($parameter['comparisonType'])){
-                            $comparisonType = $parameter['comparisonType'];
-                        }
-                        else {
-                            // EQUAL
-                            $comparisonType = 3;
-                        }
-                        $select_data['filters']['items']['CustomFilters']['items'] = array_merge(
-                            $select_data['filters']['items']['CustomFilters']['items'],
-                            array(
-                                'customFilter' . $Column . '_PHP' => array (
-                                    'filterType' => 1,
-                                    'comparisonType' => $comparisonType,
-                                    'isEnabled' => true,
-                                    'trimDateTimeParameterToDate' => false,
-                                    'leftExpression' => array (
-                                        'expressionType' => 0,
-                                        'columnPath' => $Column,
-                                    ),
-                                    'rightExpression' => array (
-                                        'expressionType' => 2,
-                                        'parameter' => array (
-                                            'dataValueType' => $parameter['dataValueType'],
-                                            'value' => $parameter['value'],
-                                        ),
-                                    ),
-                                ),
-                            )
-                        );
-                    }
-                }
-            }
+        if ($Filters != NULL) {
+            $select_data = $this->filters($select_data, $Filters);
         }
 
         //if ($this->debug) error_log('BPMonline\\schema query_data: ' . var_export($select_data, TRUE));
@@ -394,6 +452,10 @@ class BPMonline
             )
         );
 
+        $Filters = '00000000-0000-0000-0000-000000000000';
+        
+        // Or
+        
         $Filters = array(
             'logicalOperation' => 0,
             'items' => array(
@@ -416,64 +478,8 @@ class BPMonline
                 )
             );
 
-            if (is_array($Filters)) {
-                if (isset($Filters['items'])){
-                    if (count($Filters['items']) > 0) {
-                        if (isset($Filters['logicalOperation'])) {
-                            $LogicalOperatorType = $Filters['logicalOperation'];
-                        }
-                        else {
-                            // AND
-                            $LogicalOperatorType = 0;
-                        }
-                        $update_data['filters'] = array (
-                            'logicalOperation' => 0,
-                            'isEnabled' => true,
-                            'filterType' => 6,
-                            'items' => array (
-                                'CustomFilters' => array (
-                                    'logicalOperation' => $LogicalOperatorType,
-                                    'isEnabled' => true,
-                                    'filterType' => 6,
-                                    'items' => array (),
-                                )
-                            )
-                        );
-
-                        foreach ($Filters['items'] as $Column => $parameter) {
-                            // https://academy.bpmonline.com/api/jscoreapi/7.12.0/index.html?_ga=2.104770368.1168104844.1543204589-1794740920.1543204589#!/api/Terrasoft.core.enums.ComparisonType
-                            if (isset($parameter['comparisonType'])){
-                                $comparisonType = $parameter['comparisonType'];
-                            }
-                            else {
-                                // EQUAL
-                                $comparisonType = 3;
-                            }
-                            $update_data['filters']['items']['CustomFilters']['items'] = array_merge(
-                                $update_data['filters']['items']['CustomFilters']['items'],
-                                array(
-                                    'customFilter' . $Column . '_PHP' => array (
-                                        'filterType' => 1,
-                                        'comparisonType' => $comparisonType,
-                                        'isEnabled' => true,
-                                        'trimDateTimeParameterToDate' => false,
-                                        'leftExpression' => array (
-                                            'expressionType' => 0,
-                                            'columnPath' => $Column,
-                                        ),
-                                        'rightExpression' => array (
-                                            'expressionType' => 2,
-                                            'parameter' => array (
-                                                'dataValueType' => $parameter['dataValueType'],
-                                                'value' => $parameter['value'],
-                                            ),
-                                        ),
-                                    ),
-                                )
-                            );
-                        }
-                    }
-                }
+            if ($Filters != NULL) {
+                $update_data = $this->filters($$update_data, $Filters);
             }
 
             $update_json = json_encode($update_data);
