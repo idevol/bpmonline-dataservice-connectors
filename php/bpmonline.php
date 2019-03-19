@@ -413,18 +413,18 @@ class BPMonline
         */
 
         $insert_url = $this->bpmonline_url . $this->insert_uri;
-        $insert_data = array(
+        $insert_query = array(
             'RootSchemaName' => $RootSchemaName,
             'OperationType' => 1,
             'ColumnValues' => array(
                 'Items' => $ColumnValuesItems
             )
         );
-        $insert_json = json_encode($insert_data);
-        if ($this->log) $this->log_data('bpmonline-insert-json-query', $insert_json);
-        $insert_result = $this->get($insert_url, $insert_json);
-        if ($this->log) $this->log_data('bpmonline-insert-result-json', $insert_result);
-        return $insert_result;
+        $insert_query_json = json_encode($insert_query);
+        if ($this->log) $this->log_data('bpmonline-insert-query-json', $insert_query_json);
+        $insert_result_json = $this->get($insert_url, $insert_query_json);
+        if ($this->log) $this->log_data('bpmonline-insert-result-json', $insert_result_json);
+        return $insert_result_json;
     }
 
     public function insert($RootSchemaName, $ColumnValuesItems = array()){
