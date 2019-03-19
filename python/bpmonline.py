@@ -67,6 +67,91 @@ class BPMonline:
                     out = True
         return out
     
+    def __filters(self, Query = {}, Filters = None):
+        if (Filters != None):
+            if (isinstance(Filters, str)):
+                Query['filters'] = {
+                    'items': {
+                        'primaryColumnFilter': {
+                            'filterType': 1,
+                            'comparisonType': 3,
+                            'isEnabled': True,
+                            'trimDateTimeParameterToDate': False,
+                            'leftExpression': {
+                                'expressionType': 1,
+                                'functionType': 1,
+                                'macrosType': 34
+                            },
+                            'rightExpression': {
+                                'expressionType': 2,
+                                'parameter': {
+                                    'dataValueType': 0,
+                                    'value': Filters
+                                }
+                            }
+                        }
+                    },
+                    'logicalOperation': 0,
+                    'isEnabled': True,
+                    'filterType': 6
+                }
+            elif (Filters['items'] != None):
+                if (isinstance(Filters['items'], dict)):
+                    if (len(Filters['items']) > 0):
+
+                        LogicalOperatorType = 0
+                        if ('logicalOperation' in Filters):
+                            LogicalOperatorType = Filters['logicalOperation']
+                        
+                        Query['filters'] = {
+                            'logicalOperation':0,
+                            'isEnabled':True,
+                            'filterType':6,
+                            'items':{
+                                'CustomFilters':{
+                                    'logicalOperation':LogicalOperatorType,
+                                    'isEnabled':True,
+                                    'filterType':6,
+                                    'items':{}
+                                }
+                            }
+                        }
+
+                        for Column, parameter in Filters['items'].items():
+                            # EQUAL
+                            comparisonType = 3
+                            if ('comparisonType' in parameter):
+                                comparisonType = parameter['comparisonType']
+
+                            dataValueType = 0
+                            if ('dataValueType' in parameter):
+                                dataValueType = parameter['dataValueType']
+
+                            value = ''
+                            if ('value' in parameter):
+                                value = parameter['value']
+                            
+                            Query['filters']['items']['CustomFilters']['items'].update({
+                                'customFilter' + Column + '_PHP':{
+                                    'filterType':1,
+                                    'comparisonType':comparisonType,
+                                    'isEnabled':True,
+                                    'trimDateTimeParameterToDate':False,
+                                    'leftExpression':{
+                                        'expressionType':0,
+                                        'columnPath':Column
+                                    },
+                                    'rightExpression':{
+                                        'expressionType':2,
+                                        'parameter':{
+                                            'dataValueType':dataValueType,
+                                            'value':value
+                                        }
+                                    }
+                                }
+                            })
+        return Query
+
     def select_json(self, RootSchemaName, Columns, Filters = None):
         if self.__session_validator():
             select_query = {
@@ -101,61 +186,7 @@ class BPMonline:
                 })
 
             if (Filters != None):
-                if (Filters['items'] != None):
-                    if (isinstance(Filters['items'], dict)):
-                        if (len(Filters['items']) > 0):
-
-                            LogicalOperatorType = 0
-                            if ('logicalOperation' in Filters):
-                                LogicalOperatorType = Filters['logicalOperation']
-                            
-                            select_query['filters'] = {
-                                'logicalOperation':0,
-                                'isEnabled':True,
-                                'filterType':6,
-                                'items':{
-                                    'CustomFilters':{
-                                        'logicalOperation':LogicalOperatorType,
-                                        'isEnabled':True,
-                                        'filterType':6,
-                                        'items':{}
-                                    }
-                                }
-                            }
-
-                            for Column, parameter in Filters['items'].items():
-                                # EQUAL
-                                comparisonType = 3
-                                if ('comparisonType' in parameter):
-                                    comparisonType = parameter['comparisonType']
-
-                                dataValueType = 0
-                                if ('dataValueType' in parameter):
-                                    dataValueType = parameter['dataValueType']
-
-                                value = ''
-                                if ('value' in parameter):
-                                    value = parameter['value']
-                                
-                                select_query['filters']['items']['CustomFilters']['items'].update({
-                                    'customFilter' + Column + '_PHP':{
-                                        'filterType':1,
-                                        'comparisonType':comparisonType,
-                                        'isEnabled':True,
-                                        'trimDateTimeParameterToDate':False,
-                                        'leftExpression':{
-                                            'expressionType':0,
-                                            'columnPath':Column
-                                        },
-                                        'rightExpression':{
-                                            'expressionType':2,
-                                            'parameter':{
-                                                'dataValueType':dataValueType,
-                                                'value':value
-                                            }
-                                        }
-                                    }
-                                })
+                select_query = self.__filters(select_query, Filters)
 
             select_url = self.__bpmonline_url + self.__select_uri
             select_response = requests.post(select_url, headers=self.__session_header, cookies=self.__session.cookies, json=select_query)
@@ -234,61 +265,7 @@ class BPMonline:
                 }
 
                 if (Filters != None):
-                    if (Filters['items'] != None):
-                        if (isinstance(Filters['items'], dict)):
-                            if (len(Filters['items']) > 0):
-
-                                LogicalOperatorType = 0
-                                if ('logicalOperation' in Filters):
-                                    LogicalOperatorType = Filters['logicalOperation']
-                                
-                                update_query['filters'] = {
-                                    'logicalOperation':0,
-                                    'isEnabled':True,
-                                    'filterType':6,
-                                    'items':{
-                                        'CustomFilters':{
-                                            'logicalOperation':LogicalOperatorType,
-                                            'isEnabled':True,
-                                            'filterType':6,
-                                            'items':{}
-                                        }
-                                    }
-                                }
-
-                                for Column, parameter in Filters['items'].items():
-                                    # EQUAL
-                                    comparisonType = 3
-                                    if ('comparisonType' in parameter):
-                                        comparisonType = parameter['comparisonType']
-
-                                    dataValueType = 0
-                                    if ('dataValueType' in parameter):
-                                        dataValueType = parameter['dataValueType']
-
-                                    value = ''
-                                    if ('value' in parameter):
-                                        value = parameter['value']
-                                    
-                                    update_query['filters']['items']['CustomFilters']['items'].update({
-                                        'customFilter' + Column + '_PHP':{
-                                            'filterType':1,
-                                            'comparisonType':comparisonType,
-                                            'isEnabled':True,
-                                            'trimDateTimeParameterToDate':False,
-                                            'leftExpression':{
-                                                'expressionType':0,
-                                                'columnPath':Column
-                                            },
-                                            'rightExpression':{
-                                                'expressionType':2,
-                                                'parameter':{
-                                                    'dataValueType':dataValueType,
-                                                    'value':value
-                                                }
-                                            }
-                                        }
-                                    })
+                    update_query = self.__filters(update_query, Filters)
 
                 update_url = self.__bpmonline_url + self.__update_uri
                 update_response = requests.post(update_url, headers=self.__session_header, cookies=self.__session.cookies, json=update_query)
@@ -301,3 +278,4 @@ class BPMonline:
     def update(self, RootSchemaName, ColumnValuesItems = {}, Filters = None):
         update_response_json = self.update_json(RootSchemaName, ColumnValuesItems, Filters)
         return json.loads(update_response_json)
+    
