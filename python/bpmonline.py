@@ -5,6 +5,10 @@ import json
 import pickle
 from pathlib import Path
 
+"""
+https://github.com/idevol/bpmonline-dataservice-connectors
+"""
+
 class BPMonline:
     __bpmonline_url = 'https://myproduct.bpmonline.com'
     

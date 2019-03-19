@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# https://github.com/idevol/bpmonline-dataservice-connectors
+
 # bpm'online URL
 BPMONLINE_URL='https://myproduct.bpmonline.com'
 
