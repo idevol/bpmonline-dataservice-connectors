@@ -335,7 +335,7 @@ class BPMonline
         */
 
         $select_url = $this->bpmonline_url . $this->select_uri;
-        $select_data = array(
+        $select_query = array(
             'RootSchemaName' => $RootSchemaName,
             'OperationType' => 0,
             'Columns' => array(
@@ -347,8 +347,8 @@ class BPMonline
 
         foreach($Columns as &$Column){
             if ($Column == 'Name'){
-                $select_data['Columns']['Items'] = array_merge(
-                    $select_data['Columns']['Items'], 
+                $select_query['Columns']['Items'] = array_merge(
+                    $select_query['Columns']['Items'], 
                     array(
                         $Column => array(
                             'OrderDirection' => 1,
@@ -361,8 +361,8 @@ class BPMonline
                 );
             }
             else {
-                $select_data['Columns']['Items'] = array_merge(
-                    $select_data['Columns']['Items'], 
+                $select_query['Columns']['Items'] = array_merge(
+                    $select_query['Columns']['Items'], 
                     array(
                         $Column => array(
                             'Expression' => array(
@@ -376,22 +376,22 @@ class BPMonline
         }
 
         if ($Filters != NULL) {
-            $select_data = $this->filters($select_data, $Filters);
+            $select_query = $this->filters($select_query, $Filters);
         }
 
-        //if ($this->debug) error_log('BPMonline\\schema query_data: ' . var_export($select_data, TRUE));
+        //if ($this->debug) error_log('BPMonline\\schema query_data: ' . var_export($select_query, TRUE));
 
-        $select_json = json_encode($select_data);
-        //if ($this->log) $this->log_data('bpmonline-select-query-json', $select_json);
-        $select_result = $this->get($select_url, $select_json);
-        //if ($this->log) $this->log_data('bpmonline-select-result-json', $select_result);
-        return $select_result;
+        $select_query_json = json_encode($select_query);
+        //if ($this->log) $this->log_data('bpmonline-select-query-json', $select_query_json);
+        $select_result_json = $this->get($select_url, $select_query_json);
+        //if ($this->log) $this->log_data('bpmonline-select-result-json', $select_result_json);
+        return $select_result_json;
     }
 
     public function select($RootSchemaName, $Columns = array('Name'), $Filters = NULL) {
         $out = FALSE;
-        $select_json = $this->select_json($RootSchemaName, $Columns, $Filters);
-        $select_result = json_decode($select_json, true);
+        $select_result_json = $this->select_json($RootSchemaName, $Columns, $Filters);
+        $select_result = json_decode($select_result_json, true);
         if (json_last_error() == JSON_ERROR_NONE) {
             $out = $select_result;
             //if ($this->log) $this->log_data('bpmonline-select-result-array', var_export($select_result, true));
