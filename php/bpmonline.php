@@ -479,7 +479,7 @@ class BPMonline
             );
 
             if ($Filters != NULL) {
-                $update_query = $this->filters($$update_query, $Filters);
+                $update_query = $this->filters($update_query, $Filters);
             }
 
             $update_query_json = json_encode($update_query);
