@@ -360,6 +360,20 @@ class BPMonline
                     )
                 );
             }
+            elseif ($Column == 'CreatedOn'){
+                $select_query['Columns']['Items'] = array_merge(
+                    $select_query['Columns']['Items'], 
+                    array(
+                        $Column => array(
+                            'OrderDirection' => 2,
+                            'Expression' => array(
+                                'ExpressionType' => 0,
+                                'ColumnPath' => $Column
+                            )
+                        )
+                    )
+                );
+            }
             else {
                 $select_query['Columns']['Items'] = array_merge(
                     $select_query['Columns']['Items'], 
