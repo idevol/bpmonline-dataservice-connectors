@@ -218,9 +218,20 @@ class BPMonline
                     'comparisonType' => 3,
                     'dataValueType' => 0, 
                     'value' => '00000000-0000-0000-0000-000000000000'
+                ),
+                'Name' => array(
+                    'comparisonType' => 11,
+                    'dataValueType' => 0, 
+                    'value' => 'John'
                 )
             )
         );
+
+        // Or
+
+        $Filters = array('filters' => array(
+            // Custoum
+        ));
         */
 
         if ($Filters != NULL){
@@ -308,6 +319,9 @@ class BPMonline
                             );
                         }
                     }
+                    elseif (isset($Filters['filters'])){
+                        $Query['filters'] = $Filters['filters'];
+                    }
                 }
             }
         }
@@ -321,7 +335,7 @@ class BPMonline
         $Filters = '00000000-0000-0000-0000-000000000000';
         
         // Or
-
+        
         $Filters = array(
             'logicalOperation' => 0,
             'items' => array(
@@ -329,9 +343,20 @@ class BPMonline
                     'comparisonType' => 3,
                     'dataValueType' => 0, 
                     'value' => '00000000-0000-0000-0000-000000000000'
+                ),
+                'Name' => array(
+                    'comparisonType' => 11,
+                    'dataValueType' => 0, 
+                    'value' => 'John'
                 )
             )
         );
+
+        // Or
+
+        $Filters = array('filters' => array(
+            // Custoum
+        ));
         */
 
         $select_url = $this->bpmonline_url . $this->select_uri;
@@ -469,7 +494,7 @@ class BPMonline
         $Filters = '00000000-0000-0000-0000-000000000000';
         
         // Or
-
+        
         $Filters = array(
             'logicalOperation' => 0,
             'items' => array(
@@ -477,9 +502,20 @@ class BPMonline
                     'comparisonType' => 3,
                     'dataValueType' => 0, 
                     'value' => '00000000-0000-0000-0000-000000000000'
+                ),
+                'Name' => array(
+                    'comparisonType' => 11,
+                    'dataValueType' => 0, 
+                    'value' => 'John'
                 )
             )
         );
+
+        // Or
+
+        $Filters = array('filters' => array(
+            // Custoum
+        ));
         */
 
         if (!empty($ColumnValuesItems)) {
