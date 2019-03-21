@@ -319,9 +319,9 @@ class BPMonline
                             );
                         }
                     }
-                    elseif (isset($Filters['filters'])){
-                        $Query['filters'] = $Filters['filters'];
-                    }
+                }
+                elseif (isset($Filters['filters'])){
+                    $Query['filters'] = $Filters['filters'];
                 }
             }
         }
