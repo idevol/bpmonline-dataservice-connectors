@@ -154,6 +154,8 @@ class BPMonline:
                                     }
                                 }
                             })
+            elif (Filters['filters'] != None):
+                Query['filters'] = Filters['filters']
         return Query
 
     def select_json(self, RootSchemaName, Columns, Filters = None):
