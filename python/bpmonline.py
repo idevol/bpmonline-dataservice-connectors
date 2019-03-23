@@ -277,9 +277,9 @@ class BPMonline:
                 update_response = requests.post(update_url, headers=self.__session_header, cookies=self.__session.cookies, json=update_query)
                 return update_response.text
             else:
-                return '{}'
+                return '{"error":"ColumnValuesItems is None"}'
         else:
-            return '{}'
+            return '{"error":"No session"}'
 
     def update(self, RootSchemaName, ColumnValuesItems = {}, Filters = None):
         update_response_json = self.update_json(RootSchemaName, ColumnValuesItems, Filters)
