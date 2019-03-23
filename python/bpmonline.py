@@ -207,7 +207,7 @@ class BPMonline:
     def insert_json(self, RootSchemaName, ColumnValuesItems = {}):
         if self.__session_validator():
             """
-            ColumnValuesItems:{
+            ColumnValuesItems = {
                 'Column1':{
                     'ExpressionType':2,
                     'Parameter':{
@@ -239,7 +239,7 @@ class BPMonline:
     def update_json(self, RootSchemaName, ColumnValuesItems = {}, Filters = None):
         if self.__session_validator():
             """
-            ColumnValuesItems:{
+            ColumnValuesItems = {
                 'Column1':{
                     'ExpressionType':2,
                     'Parameter':{
@@ -249,7 +249,7 @@ class BPMonline:
                 }
             }
 
-            Filters:{
+            Filters = {
                 'logicalOperation':0,
                 'items':{
                     'Id':{
