@@ -261,7 +261,7 @@ class BPMonline:
             }
             """
 
-            if not ColumnValuesItems:
+            if ColumnValuesItems != None:
                 update_query = {
                     'RootSchemaName':RootSchemaName,
                     'OperationType':1,
