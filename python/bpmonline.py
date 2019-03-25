@@ -188,18 +188,38 @@ class BPMonline:
             }
 
             for column in Columns:
-                select_query['Columns']['Items'].update({
-                    column:{
-                        'caption': '',
-                        'orderDirection': 0,
-                        'orderPosition': -1,
-                        'isVisible': True,
-                        'Expression':{
-                            'ExpressionType':0,
-                            'ColumnPath':column
+                if (column == 'Name'):
+                    select_query['Columns']['Items'].update({
+                        column:{
+                            'orderDirection': 1,
+                            'isVisible': True,
+                            'Expression':{
+                                'ExpressionType':0,
+                                'ColumnPath':column
+                            }
                         }
-                    }
-                })
+                    })
+                elif (column == 'CreatedOn'):
+                    select_query['Columns']['Items'].update({
+                        column:{
+                            'orderDirection': 2,
+                            'isVisible': True,
+                            'Expression':{
+                                'ExpressionType':0,
+                                'ColumnPath':column
+                            }
+                        }
+                    })
+                else:
+                    select_query['Columns']['Items'].update({
+                        column:{
+                            'isVisible': True,
+                            'Expression':{
+                                'ExpressionType':0,
+                                'ColumnPath':column
+                            }
+                        }
+                    })
 
             if (Filters != None):
                 select_query = self.__filters(select_query, Filters)
