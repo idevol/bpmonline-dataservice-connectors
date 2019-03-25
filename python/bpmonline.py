@@ -58,7 +58,7 @@ class BPMonline:
             cookie_file = Path(self.__login_cookie_filename)
             if cookie_file.is_file():
                 filehandler = open(self.__login_cookie_filename, 'rb') 
-                self.__session = pickle.load(filehandler)
+                self.__session =    pickle.load(filehandler)
                 self.__session_create = datetime.datetime.fromtimestamp(os.path.getmtime(self.__login_cookie_filename))
                 return (datetime.datetime.now() - self.__session_create).total_seconds()
             else:
