@@ -4,6 +4,8 @@ import requests
 import json
 import pickle
 from pathlib import Path
+import os.path
+import time
 
 """
 https://github.com/idevol/bpmonline-dataservice-connectors
@@ -22,6 +24,7 @@ class BPMonline:
 
     __session = None
     __session_create = None
+    __session_timeout = 60
     __session_header = {}
     __json_header = {'Content-Type': 'application/json'}
 
@@ -52,23 +55,30 @@ class BPMonline:
         if self.__session_create != None:
             return (datetime.datetime.now() - self.__session_create).total_seconds()
         else:
-            return 1000
+            cookie_file = Path(self.__login_cookie_filename)
+            if cookie_file.is_file():
+                filehandler = open(self.__login_cookie_filename, 'rb') 
+                self.__session = pickle.load(filehandler)
+                self.__session_create = date.fromtimestamp(os.path.getmtime(self.__login_cookie_filename))
+                return (datetime.datetime.now() - self.__session_create).total_seconds()
+            else:
+                return (self.__session_timeout += 1)
 
     def __session_validator(self):
         out = False
-        if self.__session != False:
-            cookie_file = Path(self.__login_cookie_filename)
-            if cookie_file.is_file():
-                if (self.__session_lifetime() > 60):
+        if self.__session != None:
+            if self.__session != False:
+                if (self.__session_lifetime() > self.__session_timeout):
                     if self.__login():
                         out = True
                 else:
-                    filehandler = open(self.__login_cookie_filename, 'rb') 
-                    self.__session = pickle.load(filehandler)
                     out = True
             else:
                 if self.__login():
                     out = True
+        else:
+            if self.__login():
+                out = True
         return out
     
     def __filters(self, Query = {}, Filters = None):
