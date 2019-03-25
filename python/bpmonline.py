@@ -62,7 +62,7 @@ class BPMonline:
                 self.__session_create = date.fromtimestamp(os.path.getmtime(self.__login_cookie_filename))
                 return (datetime.datetime.now() - self.__session_create).total_seconds()
             else:
-                return (self.__session_timeout += 1)
+                return (self.__session_timeout + 1)
 
     def __session_validator(self):
         out = False
