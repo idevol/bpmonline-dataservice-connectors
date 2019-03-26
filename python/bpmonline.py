@@ -21,6 +21,7 @@ class BPMonline:
     __select_uri = '/0/dataservice/json/SyncReply/SelectQuery'
     __insert_uri = '/0/dataservice/json/reply/InsertQuery'
     __update_uri = '/0/dataservice/json/reply/UpdateQuery'
+    __delete_uri = '/0/dataservice/json/reply/DeleteQuery'
 
     __session = None
     __session_create = None
@@ -314,6 +315,26 @@ class BPMonline:
     def update(self, RootSchemaName, ColumnValuesItems = {}, Filters = None):
         update_response_json = self.update_json(RootSchemaName, ColumnValuesItems, Filters)
         return json.loads(update_response_json)
+
+    def delete_json(self, RootSchemaName, Filters = None):
+        if (Filters != None):
+            delete_query = {
+                'RootSchemaName':RootSchemaName,
+                'OperationType':3,
+                'ColumnValues':{}
+            }
+
+            delete_query = self.__filters(delete_query, Filters)
+
+            delete_url = self.__bpmonline_url + self.__delete_uri
+            delete_response = requests.post(delete_url, headers=self.__session_header, cookies=self.__session.cookies, json=delete_query)
+            return delete_response.text
+        else:
+            return '{"error":"No query filters"}'
+
+    def delete(self, RootSchemaName, Filters = None):
+        delete_json = self.delete_json(RootSchemaName, Filters)
+        return json.loads(delete_json)
 
     def lookup_json(self, RootSchemaName, ColumnValuesItems = ['Id','Name']):
         return self.select_json(RootSchemaName, ColumnValuesItems)
