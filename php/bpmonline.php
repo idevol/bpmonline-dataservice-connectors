@@ -553,6 +553,21 @@ class BPMonline
         }
         return $out;
     }
+
+    public function lookup_json($RootSchemaName, $Columns = array('Id', 'Name')){
+        return $this->lookup_json($RootSchemaName, $Columns);
+    }
+
+    public function lookup($RootSchemaName, $Columns = array('Id', 'Name')){
+        $out = FALSE;
+        $lookup_result_json = $this->lookup_json($RootSchemaName, $Columns);
+        $lookup_result = json_decode($lookup_result_json, true);
+        if (json_last_error() == JSON_ERROR_NONE) {
+            $out = $lookup_result;
+            //if ($this->log) $this->log_data('bpmonline-lookup-result-array', var_export($lookup_result, true));
+        }
+        return $out;
+    }
 }
 
 ?>
