@@ -538,7 +538,7 @@ class BPMonline
             $update_result_json = $this->get($update_url, $update_query_json);
             //if ($this->log) $this->log_data('bpmonline-update-result-json', $update_result_json);
             $out = $update_result_json;
-            //$out = $update_json;
+            //$out = $update_result_json;
         }
 
         return $out;
