@@ -34,6 +34,7 @@ class BPMonline
     private $select_uri = '/0/dataservice/json/SyncReply/SelectQuery';
     private $insert_uri = '/0/dataservice/json/reply/InsertQuery';
     private $update_uri = '/0/dataservice/json/reply/UpdateQuery';
+    private $delete_uri = '/0/dataservice/json/reply/DeleteQuery';
 
     
     function __construct() {
@@ -550,6 +551,38 @@ class BPMonline
         if (json_last_error() == JSON_ERROR_NONE) {
             $out = $update_result;
             //if ($this->log) $this->log_data('bpmonline-update-result-array', var_export($update_result, true));
+        }
+        return $out;
+    }
+
+    public function delete_json($RootSchemaName, $Filters = NULL){
+        $out = FALSE;
+        if ($Filters != NULL){
+            $delete_url = $this->bpmonline_url . $this->delete_uri;
+            $delete_query = array(
+                'RootSchemaName' => $RootSchemaName,
+                'OperationType' => 3,
+                'ColumnValues' => array()
+            );
+            $delete_query = $this->filters($delete_query, $Filters);
+
+            $delete_query_json = json_encode($delete_query);
+            //if ($this->log) $this->log_data('bpmonline-delete-query-json', $delete_query_json);
+            $delete_result_json = $this->get($delete_url, $delete_query_json);
+            //if ($this->log) $this->log_data('bpmonline-delete-result-json', $delete_result_json);
+            $out = $delete_result_json;
+            //$out = $delete_result_json;
+        }
+        return $out;
+    }
+
+    public function delete($RootSchemaName, $Filters = NULL){
+        $out = FALSE;
+        $delete_result_json = $this->delete_json($RootSchemaName, $Filters);
+        $delete_result = json_decode($delete_result_json, true);
+        if (json_last_error() == JSON_ERROR_NONE) {
+            $out = $delete_result;
+            //if ($this->log) $this->log_data('bpmonline-delete-result-array', var_export($delete_result, true));
         }
         return $out;
     }
