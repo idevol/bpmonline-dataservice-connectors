@@ -555,7 +555,7 @@ class BPMonline
     }
 
     public function lookup_json($RootSchemaName, $Columns = array('Id', 'Name')){
-        return $this->lookup_json($RootSchemaName, $Columns);
+        return $this->select_json($RootSchemaName, $Columns);
     }
 
     public function lookup($RootSchemaName, $Columns = array('Id', 'Name')){
