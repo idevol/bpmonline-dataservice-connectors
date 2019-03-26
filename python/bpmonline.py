@@ -314,4 +314,10 @@ class BPMonline:
     def update(self, RootSchemaName, ColumnValuesItems = {}, Filters = None):
         update_response_json = self.update_json(RootSchemaName, ColumnValuesItems, Filters)
         return json.loads(update_response_json)
-    
+
+    def lookup_json(self, RootSchemaName, ColumnValuesItems = ['Id','Name']):
+        return self.select_json(RootSchemaName, ColumnValuesItems)
+
+    def lookup(self, RootSchemaName, ColumnValuesItems = ['Id','Name']):
+        lookup_json = self.lookup_json(RootSchemaName, ColumnValuesItems)
+        return json.loads(lookup_json)
