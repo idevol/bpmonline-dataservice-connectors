@@ -607,7 +607,7 @@ class BPMonline
             'logicalOperation' => 0,
             'items' => array(
                 'Name' => array(
-                    'comparisonType' => 11,
+                    'comparisonType' => 3,
                     'dataValueType' => 0, 
                     'value' => $Name
                 )
