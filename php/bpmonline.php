@@ -19,8 +19,11 @@
 class BPMonline
 {
     // Debug & Log
-    private $debug = FALSE;
+    private $debug = TRUE;
     private $log = FALSE;
+
+    // Cache on query select
+    private $cache = TRUE;
 
     // bpm'online URL product
     private $bpmonline_url = 'https://myproduct.bpmonline.com';
@@ -142,13 +145,29 @@ class BPMonline
             elseif ($cache_file_lifetime <= $lifetime) {
                 if ($this->debug) error_log("BPMonline\\cache: cache_file_lifetime: $cache_file_lifetime <= lifetime: $lifetime ");
                 $cache_content = $this->cache_load($data_query);
-                if (!empty($cache_content)){
+                if (empty($cache_content)){
+                    $this->cache_save($data_query, $data_content);
+                }
+                else{
                     $cache_out = $cache_content;
                     if ($this->debug) error_log("BPMonline\\cache: cache_content is not empty ");
                 }
             }
+            else{
+                $this->cache_save($data_query, $data_content);
+            }
         }
         return $cache_out;
+    }
+
+    public function cache_delete() {
+        $cache_path  = dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'cache' ;
+        if (!file_exists($cache_path)) {
+            $files = glob($cache_path . DIRECTORY_SEPARATOR . '*');
+            foreach($files as $file){
+                if(is_file($file)) unlink($file);
+            }
+        }
     }
 
     private function bpmcsrf() {
@@ -491,16 +510,21 @@ class BPMonline
 
         $select_result_json = '{}';
 
-        $select_cache = $this->cache($cache_lifetime, $select_query_json);
-        if (!empty($select_cache)){
-            $select_result_json = $select_cache;
-            if ($this->debug) error_log('BPMonline\\select cache is load ');
+        if ($this->cache){
+            $select_cache = $this->cache($cache_lifetime, $select_query_json);
+            if (!empty($select_cache)){
+                $select_result_json = $select_cache;
+                if ($this->debug) error_log('BPMonline\\select cache is load ');
+            }
+            else {
+                if ($this->debug) error_log('BPMonline\\select cache is not load ');
+                $select_result_json_nocache = $this->get($select_url, $select_query_json);
+                $select_result_json = $this->cache($cache_lifetime, $select_query_json, $select_result_json_nocache);
+                //if ($this->log) $this->log_data('bpmonline-select-result-json', $select_result_json);
+            }
         }
         else {
-            if ($this->debug) error_log('BPMonline\\select cache is not load ');
-            $select_result_json_nocache = $this->get($select_url, $select_query_json);
-            $select_result_json = $this->cache($cache_lifetime, $select_query_json, $select_result_json_nocache);
-            //if ($this->log) $this->log_data('bpmonline-select-result-json', $select_result_json);
+            $select_result_json = $this->get($select_url, $select_query_json);
         }
         
         return $select_result_json;
@@ -666,7 +690,7 @@ class BPMonline
     }
 
     public function lookup_json($RootSchemaName, $Columns = array('Id', 'Name')){
-        return $this->select_json($RootSchemaName, $Columns);
+        return $this->select_json($RootSchemaName, $Columns, NULL, 600);
     }
 
     public function lookup($RootSchemaName, $Columns = array('Id', 'Name')){
