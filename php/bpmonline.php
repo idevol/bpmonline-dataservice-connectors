@@ -86,6 +86,61 @@ class BPMonline
         }
     }
 
+    private function cache_filename($data){
+        return sha1($data);
+    }
+
+    private function cache_save($data_query, $data_content) {
+        $cache_path  = dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'cache' ;
+        
+        if (!file_exists($cache_path)) {
+            if(!mkdir($cache_path, 0755)) {
+                if ($this->debug) error_log("BPMonline\\cache Error: mkdir error to create folder.");
+            }
+        }
+
+        $cache_file = $cache_path . DIRECTORY_SEPARATOR . $this->cache_filename($data_query);
+
+        if (file_put_contents($cache_file, $data_content) === FALSE){
+            if ($this->debug) error_log("BPMonline\\cache_save Error: could not write in file: $cache_file");
+        }
+    }
+
+    private function cache_load($data_query) {
+        $data_content = '';
+        $cache_path  = dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'cache' ;
+        $cache_file = $cache_path . DIRECTORY_SEPARATOR . $this->cache_filename($data_query);
+        if (file_exists($cache_file)) {
+            $cache_content = file_get_contents($cache_file);
+            if ($cache_content !== FALSE){
+                $data_content = $cache_content;
+            }
+            else {
+                if ($this->debug) error_log("BPMonline\\cache_load Error: could not load content of file: $cache_file");
+            }
+        }
+        return $data_content;
+    }
+
+    private function cache($lifetime, $data_query, $data_content = ''){
+        $cache_path  = dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'cache' ;
+        $cache_file = $cache_path . DIRECTORY_SEPARATOR . $this->cache_filename($data_query);
+        $cache_file_lifetime = $this->file_lifetime($cache_file);
+        
+        if ($cache_file_lifetime === FALSE){
+            $this->cache_save($data_query, $data_content);
+        }
+        else {
+            if ($cache_file_lifetime > $lifetime && !empty($data_content)){
+                $this->cache_save($data_query, $data_content);
+            }
+            elseif ($cache_file_lifetime <= $lifetime) {
+                $data_content = $this->cache_load($cache_file);
+            }
+        }
+        return $data_content;
+    }
+
     private function bpmcsrf() {
         $out = '';
         if (file_exists($this->login_cookie_filename)) {
@@ -329,7 +384,7 @@ class BPMonline
         return $Query;
     }
 
-    public function select_json($RootSchemaName, $Columns = array('Name'), $Filters = NULL) {
+    public function select_json($RootSchemaName, $Columns = array('Name'), $Filters = NULL, $cache_lifetime = 30) {
         /*
         $Columns = array('Id',Name','CreatedBy');
 
@@ -423,8 +478,18 @@ class BPMonline
 
         $select_query_json = json_encode($select_query);
         //if ($this->log) $this->log_data('bpmonline-select-query-json', $select_query_json);
-        $select_result_json = $this->get($select_url, $select_query_json);
-        //if ($this->log) $this->log_data('bpmonline-select-result-json', $select_result_json);
+
+        $select_result_json = '{}';
+
+        $select_cache = $this->cache($cache_lifetime, $select_query_json);
+        if (!empty($select_cache)){
+            $select_result_json = $select_cache;
+        }
+        else {
+            $select_result_json = $this->cache($cache_lifetime, $select_query_json, $this->get($select_url, $select_query_json));
+            //if ($this->log) $this->log_data('bpmonline-select-result-json', $select_result_json);
+        }
+        
         return $select_result_json;
     }
 
