@@ -394,7 +394,7 @@ class BPMonline
         return $Query;
     }
 
-    public function select_json($RootSchemaName, $Columns = array('Name'), $Filters = NULL, $cache_lifetime = 30) {
+    public function select_json($RootSchemaName, $Columns = array('Name'), $Filters = NULL, $cache_lifetime = 60) {
         /*
         $Columns = array('Id',Name','CreatedBy');
 
