@@ -100,8 +100,9 @@ class BPMonline
         }
 
         $cache_file = $cache_path . DIRECTORY_SEPARATOR . $this->cache_filename($data_query);
+        unlink($cache_file);
 
-        if (file_put_contents($cache_file, $data_content) === FALSE){
+        if (file_put_contents($cache_file, $data_content, LOCK_EX) === FALSE){
             if ($this->debug) error_log("BPMonline\\cache_save Error: could not write in file: $cache_file");
         }
     }
@@ -114,9 +115,10 @@ class BPMonline
             $cache_content = file_get_contents($cache_file);
             if ($cache_content !== FALSE){
                 $data_content = $cache_content;
+                if ($this->debug) error_log("BPMonline\\cache_load: cache is not empty: $cache_file ");
             }
             else {
-                if ($this->debug) error_log("BPMonline\\cache_load Error: could not load content of file: $cache_file");
+                if ($this->debug) error_log("BPMonline\\cache_load Error: could not load content of file: $cache_file ");
             }
         }
         return $data_content;
@@ -126,19 +128,27 @@ class BPMonline
         $cache_path  = dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'cache' ;
         $cache_file = $cache_path . DIRECTORY_SEPARATOR . $this->cache_filename($data_query);
         $cache_file_lifetime = $this->file_lifetime($cache_file);
-        
+        $cache_out = $data_content;
+
         if ($cache_file_lifetime === FALSE){
             $this->cache_save($data_query, $data_content);
+            if ($this->debug) error_log("BPMonline\\cache: cache_file_lifetime is FALSE ");
         }
         else {
             if ($cache_file_lifetime > $lifetime && !empty($data_content)){
                 $this->cache_save($data_query, $data_content);
+                if ($this->debug) error_log("BPMonline\\cache: cache_file_lifetime: $cache_file_lifetime > lifetime: $lifetime ");
             }
             elseif ($cache_file_lifetime <= $lifetime) {
-                $data_content = $this->cache_load($cache_file);
+                if ($this->debug) error_log("BPMonline\\cache: cache_file_lifetime: $cache_file_lifetime <= lifetime: $lifetime ");
+                $cache_content = $this->cache_load($data_query);
+                if (!empty($cache_content)){
+                    $cache_out = $cache_content;
+                    if ($this->debug) error_log("BPMonline\\cache: cache_content is not empty ");
+                }
             }
         }
-        return $data_content;
+        return $cache_out;
     }
 
     private function bpmcsrf() {
@@ -244,19 +254,19 @@ class BPMonline
     private function login() {
         $login_json = json_encode($this->login_credentials);
         $login_result_json = $this->get($this->bpmonline_url . $this->login_uri, $login_json, null, $this->login_cookie_filename);
-        $login_result = json_decode($login_result_json);
+        $login_result = json_decode($login_result_json, true);
         if (is_array($login_result)) {
             if (isset($login_result['Code'])){
                 if ($login_result['Code'] != 0){
-                    if ($this->debug) error_log("BPMonline\\login Error: login_result: $login_result_json ");
+                    if ($this->debug) error_log("BPMonline\\login Error: Is not login_result['Code'] != 0: $login_result_json ");
                 }
             }
             else {
-                if ($this->debug) error_log("BPMonline\\login Error: login_result['Code']: $login_result_json ");
+                if ($this->debug) error_log("BPMonline\\login Error: Is not set login_result['Code']: $login_result_json ");
             }
         }
         else {
-            if ($this->debug) error_log("BPMonline\\login Error: No array login_result: $login_result_json ");
+            if ($this->debug) error_log("BPMonline\\login Error: Is not array login_result: " . var_export($login_result, TRUE) . ' ');
         }
     }
 
@@ -474,7 +484,7 @@ class BPMonline
             $select_query = $this->filters($select_query, $Filters);
         }
 
-        //if ($this->debug) error_log('BPMonline\\schema query_data: ' . var_export($select_query, TRUE));
+        //if ($this->debug) error_log('BPMonline\\select select_query: ' . var_export($select_query, TRUE));
 
         $select_query_json = json_encode($select_query);
         //if ($this->log) $this->log_data('bpmonline-select-query-json', $select_query_json);
@@ -484,9 +494,12 @@ class BPMonline
         $select_cache = $this->cache($cache_lifetime, $select_query_json);
         if (!empty($select_cache)){
             $select_result_json = $select_cache;
+            if ($this->debug) error_log('BPMonline\\select cache is load ');
         }
         else {
-            $select_result_json = $this->cache($cache_lifetime, $select_query_json, $this->get($select_url, $select_query_json));
+            if ($this->debug) error_log('BPMonline\\select cache is not load ');
+            $select_result_json_nocache = $this->get($select_url, $select_query_json);
+            $select_result_json = $this->cache($cache_lifetime, $select_query_json, $select_result_json_nocache);
             //if ($this->log) $this->log_data('bpmonline-select-result-json', $select_result_json);
         }
         
