@@ -162,10 +162,12 @@ class BPMonline
 
     public function cache_delete() {
         $cache_path  = dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'cache' ;
-        if (!file_exists($cache_path)) {
+        if (file_exists($cache_path)) {
             $files = glob($cache_path . DIRECTORY_SEPARATOR . '*');
             foreach($files as $file){
-                if(is_file($file)) unlink($file);
+                if(is_file($file)){
+                    unlink($file);
+                }
             }
         }
     }
