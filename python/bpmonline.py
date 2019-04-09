@@ -169,12 +169,19 @@ class BPMonline:
                 Query['filters'] = Filters['filters']
         return Query
 
-    def select_json(self, RootSchemaName, Columns, Filters = None):
+    def select_json(self, RootSchemaName, Columns = None, Filters = None):
         if self.__session_validator():
             select_query = {
                 'RootSchemaName':RootSchemaName,
                 'OperationType':0,
-                'Columns':{
+                'allColumns': False,
+                'useLocalization': True
+            }
+
+            if Columns == None:
+                select_query['allColumns'] = True
+            else:
+                select_query['Columns'] = {
                     'Items':{
                         'Id':{
                             'Expression':{
@@ -183,44 +190,41 @@ class BPMonline:
                             }
                         }
                     }
-                },
-                'allColumns': False,
-                'useLocalization': True
-            }
+                }
 
-            for column in Columns:
-                if (column == 'Name'):
-                    select_query['Columns']['Items'].update({
-                        column:{
-                            'orderDirection': 1,
-                            'isVisible': True,
-                            'Expression':{
-                                'ExpressionType':0,
-                                'ColumnPath':column
+                for column in Columns:
+                    if (column == 'Name'):
+                        select_query['Columns']['Items'].update({
+                            column:{
+                                'orderDirection': 1,
+                                'isVisible': True,
+                                'Expression':{
+                                    'ExpressionType':0,
+                                    'ColumnPath':column
+                                }
                             }
-                        }
-                    })
-                elif (column == 'CreatedOn'):
-                    select_query['Columns']['Items'].update({
-                        column:{
-                            'orderDirection': 2,
-                            'isVisible': True,
-                            'Expression':{
-                                'ExpressionType':0,
-                                'ColumnPath':column
+                        })
+                    elif (column == 'CreatedOn'):
+                        select_query['Columns']['Items'].update({
+                            column:{
+                                'orderDirection': 2,
+                                'isVisible': True,
+                                'Expression':{
+                                    'ExpressionType':0,
+                                    'ColumnPath':column
+                                }
                             }
-                        }
-                    })
-                else:
-                    select_query['Columns']['Items'].update({
-                        column:{
-                            'isVisible': True,
-                            'Expression':{
-                                'ExpressionType':0,
-                                'ColumnPath':column
+                        })
+                    else:
+                        select_query['Columns']['Items'].update({
+                            column:{
+                                'isVisible': True,
+                                'Expression':{
+                                    'ExpressionType':0,
+                                    'ColumnPath':column
+                                }
                             }
-                        }
-                    })
+                        })
 
             if (Filters != None):
                 select_query = self.__filters(select_query, Filters)
@@ -231,7 +235,7 @@ class BPMonline:
         else:
             return '{}'
     
-    def select(self, RootSchemaName, Columns, Filters = None):
+    def select(self, RootSchemaName, Columns = None, Filters = None):
         select_response_json = self.select_json(RootSchemaName, Columns, Filters)
         return json.loads(select_response_json)
 
