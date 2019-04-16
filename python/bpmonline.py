@@ -181,9 +181,9 @@ class BPMonline:
 
                     if 'referenceSchemaName' in columnDesc:
                         if 'value' in row[columnName]:
-                            rowFormated.update({columnName + '_' + columnDesc['referenceSchemaName'] + 'Id': row[columnName]['value']})
+                            rowFormated.update({columnName + 'Id': row[columnName]['value']})
                         else:
-                            rowFormated.update({columnName + '_' + columnDesc['referenceSchemaName'] + 'Id': ''})
+                            rowFormated.update({columnName + 'Id': ''})
                     
                     if 'primaryImageColumnName' in columnDesc:
                         if 'primaryImageValue' in row[columnName]:
