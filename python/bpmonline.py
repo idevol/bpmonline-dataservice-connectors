@@ -377,9 +377,26 @@ class BPMonline:
         delete_json = self.delete_json(RootSchemaName, Filters)
         return json.loads(delete_json)
 
-    def lookup_json(self, RootSchemaName, ColumnValuesItems = ['Id','Name']):
-        return self.select_json(RootSchemaName, ColumnValuesItems)
+    def lookup_json(self, RootSchemaName, ColumnValuesItems = ['Id','Name'], Filters = None):
+        return self.select_json(RootSchemaName, ColumnValuesItems, Filters)
 
-    def lookup(self, RootSchemaName, ColumnValuesItems = ['Id','Name']):
-        lookup_json = self.lookup_json(RootSchemaName, ColumnValuesItems)
+    def lookup(self, RootSchemaName, ColumnValuesItems = ['Id','Name'], Filters = None):
+        lookup_json = self.lookup_json(RootSchemaName, ColumnValuesItems, Filters)
         return json.loads(lookup_json)
+
+    def lookup_by_name_json(self, RootSchemaName, Name):
+        lookupFilter = {
+            'logicalOperation':0,
+            'items':{
+                'Name':{
+                    'comparisonType':3,
+                    'dataValueType':0, 
+                    'value':Name
+                }
+            }
+        }
+        return self.lookup_json(RootSchemaName, ['Id','Name'], lookupFilter)
+
+    def lookup_by_name(self, RootSchemaName, Name):
+        lookup_by_name_json = self.lookup_by_name_json(RootSchemaName, Name)
+        return json.loads(lookup_by_name_json)
