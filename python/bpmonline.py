@@ -168,6 +168,41 @@ class BPMonline:
             elif (Filters['filters'] != None):
                 Query['filters'] = Filters['filters']
         return Query
+    
+    def __row_format(self, row, rowConfig):
+        rowFormated = {}
+        for columnName, columnDesc in rowConfig.items():
+            if 'isLookup' in columnDesc:
+                if columnDesc['isLookup']:
+                    if 'displayValue' in row[columnName]:
+                        rowFormated.update({columnName: row[columnName]['displayValue']})
+                    else:
+                        rowFormated.update({columnName: row[columnName]})
+
+                    if 'referenceSchemaName' in columnDesc:
+                        if 'value' in row[columnName]:
+                            rowFormated.update({columnName + '_' + columnDesc['referenceSchemaName'] + 'Id': row[columnName]['value']})
+                        else:
+                            rowFormated.update({columnName + '_' + columnDesc['referenceSchemaName'] + 'Id': ''})
+                    
+                    if 'primaryImageColumnName' in columnDesc:
+                        if 'primaryImageValue' in row[columnName]:
+                            rowFormated.update({columnName + '_' + columnDesc['primaryImageColumnName'] + 'Id': row[columnName]['primaryImageValue']})
+                        else:
+                            rowFormated.update({columnName + '_' + columnDesc['primaryImageColumnName'] + 'Id': ''})
+                else:
+                    rowFormated.update({columnName: row[columnName]})
+            else:
+                rowFormated.update({columnName: row[columnName]})
+        return rowFormated
+    
+    def __select_format(self, select_response):
+        rowsFormated = []
+        if {'rowsAffected', 'rowConfig', 'rows'} <= set(select_response):
+            if select_response['rowsAffected'] > 0:
+                for row in select_response['rows']:
+                    rowsFormated.append(self.__row_format(row, select_response['rowConfig']))
+        return rowsFormated
 
     def select_json(self, RootSchemaName, Columns = None, Filters = None):
         if self.__session_validator():
@@ -237,7 +272,9 @@ class BPMonline:
     
     def select(self, RootSchemaName, Columns = None, Filters = None):
         select_response_json = self.select_json(RootSchemaName, Columns, Filters)
-        return json.loads(select_response_json)
+        select_response = json.loads(select_response_json)
+        return self.__select_format(select_response)
+
 
     def insert_json(self, RootSchemaName, ColumnValuesItems = {}):
         if self.__session_validator():
