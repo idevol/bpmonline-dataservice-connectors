@@ -382,7 +382,8 @@ class BPMonline:
 
     def lookup(self, RootSchemaName, ColumnValuesItems = ['Id','Name'], Filters = None):
         lookup_json = self.lookup_json(RootSchemaName, ColumnValuesItems, Filters)
-        return json.loads(lookup_json)
+        lookup_response = json.loads(lookup_json)
+        return self.__select_format(lookup_response)
 
     def lookup_by_name_json(self, RootSchemaName, Name):
         lookupFilter = {
@@ -399,4 +400,5 @@ class BPMonline:
 
     def lookup_by_name(self, RootSchemaName, Name):
         lookup_by_name_json = self.lookup_by_name_json(RootSchemaName, Name)
-        return json.loads(lookup_by_name_json)
+        lookup_by_name_response = json.loads(lookup_by_name_json)
+        return self.__select_format(lookup_by_name_response)
