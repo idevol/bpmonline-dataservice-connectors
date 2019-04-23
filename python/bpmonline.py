@@ -25,7 +25,7 @@ class BPMonline:
 
     __session = None
     __session_create = None
-    __session_timeout = 60
+    __session_timeout = 3570
     __session_header = {}
     __json_header = {'Content-Type': 'application/json'}
 
