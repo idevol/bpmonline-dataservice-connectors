@@ -41,6 +41,8 @@ class BPMonline:
                     self.__session_header = self.__json_header
                     self.__session_header.update({'BPMCSRF': self.__session.cookies.get_dict()['BPMCSRF']})
                     self.__session_create = datetime.datetime.now()
+                    if os.path.exists(self.__login_cookie_filename):
+                        os.remove(self.__login_cookie_filename)
                     filehandler = open(self.__login_cookie_filename, 'wb') 
                     pickle.dump(self.__session, filehandler)
                     filehandler.close
