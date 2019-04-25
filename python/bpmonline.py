@@ -45,7 +45,7 @@ class BPMonline:
                         os.remove(self.__login_cookie_filename)
                     filehandler = open(self.__login_cookie_filename, 'wb') 
                     pickle.dump(self.__session, filehandler)
-                    filehandler.close
+                    filehandler.close()
                     out = True
                 else:
                     self.__session = False
@@ -53,25 +53,26 @@ class BPMonline:
         return out
 
     def __session_lifetime(self):
-        if self.__session == False:
-            return 0
-        if self.__session_create != None:
+        cookie_file = Path(self.__login_cookie_filename)
+        if cookie_file.is_file():
+            filehandler = open(self.__login_cookie_filename, 'rb') 
+            self.__session = pickle.load(filehandler)
+            filehandler.close()
+            self.__session_create = datetime.datetime.fromtimestamp(os.path.getmtime(self.__login_cookie_filename))
+            self.__session_header = self.__json_header
+            self.__session_header.update({'BPMCSRF': self.__session.cookies.get_dict()['BPMCSRF']})
+            
+        if self.__session_create != None and self.__session != False:
             return (datetime.datetime.now() - self.__session_create).total_seconds()
         else:
-            cookie_file = Path(self.__login_cookie_filename)
-            if cookie_file.is_file():
-                filehandler = open(self.__login_cookie_filename, 'rb') 
-                self.__session =    pickle.load(filehandler)
-                self.__session_create = datetime.datetime.fromtimestamp(os.path.getmtime(self.__login_cookie_filename))
-                return (datetime.datetime.now() - self.__session_create).total_seconds()
-            else:
-                return (self.__session_timeout + 1)
+            return (self.__session_timeout + 1)
 
     def __session_validator(self):
         out = False
+        session_lifetime = self.__session_lifetime()
         if self.__session != None:
             if self.__session != False:
-                if (self.__session_lifetime() > self.__session_timeout):
+                if (session_lifetime > self.__session_timeout):
                     if self.__login():
                         out = True
                 else:
