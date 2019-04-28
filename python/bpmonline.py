@@ -405,3 +405,10 @@ class BPMonline:
         lookup_by_name_json = self.lookup_by_name_json(RootSchemaName, Name)
         lookup_by_name_response = json.loads(lookup_by_name_json)
         return self.__select_format(lookup_by_name_response)
+
+    def lookup_id_by_name(self, RootSchemaName, Name):
+        lookupId = ''
+        lookupByName = self.lookup_by_name(RootSchemaName, Name)
+        if len(lookupByName) > 0:
+            lookupId = lookupByName[0]['Id']
+        return lookupId
