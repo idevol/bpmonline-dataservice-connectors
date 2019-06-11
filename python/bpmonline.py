@@ -12,17 +12,22 @@ https://github.com/idevol/bpmonline-dataservice-connectors
 """
 
 class BPMonline:
+    # bpm'online URL product
     __bpmonline_url = 'https://myproduct.bpmonline.com'
     
+    # Login configuration
     __login_credentials = {'UserName': 'Supervisor', 'UserPassword': 'secret'}
     __login_cookie_filename = 'bpmonline.session.cookie'
+    __login_bpmcsrf = None
     
+    # bpm'online DataService URI's web service (API)
     __login_uri  = '/ServiceModel/AuthService.svc/Login'
     __select_uri = '/0/dataservice/json/SyncReply/SelectQuery'
     __insert_uri = '/0/dataservice/json/reply/InsertQuery'
     __update_uri = '/0/dataservice/json/reply/UpdateQuery'
     __delete_uri = '/0/dataservice/json/reply/DeleteQuery'
 
+    # session variables
     __session = None
     __session_create = None
     __session_timeout = 3570

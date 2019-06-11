@@ -18,20 +18,14 @@
 */
 class BPMonline
 {
-    // Debug & Log
-    private $debug = TRUE;
-    private $log = FALSE;
-
-    // Cache on query select
-    private $cache = TRUE;
-
     // bpm'online URL product
     private $bpmonline_url = 'https://myproduct.bpmonline.com';
 
     // Login configuration
     private $login_credentials = array('UserName' => 'Supervisor', 'UserPassword' => 'secret');
     private $login_cookie_filename = 'bpmonline.session.cookie';
-    
+    private $login_bpmcsrf = NULL;
+
     // bpm'online DataService URI's web service (API)
     private $login_uri  = '/ServiceModel/AuthService.svc/Login';
     private $select_uri = '/0/dataservice/json/SyncReply/SelectQuery';
@@ -39,6 +33,19 @@ class BPMonline
     private $update_uri = '/0/dataservice/json/reply/UpdateQuery';
     private $delete_uri = '/0/dataservice/json/reply/DeleteQuery';
 
+    // session variables 
+    private $session = NULL;
+    private $session_create = NULL;
+    private $session_timeout = 3570;
+    private $session_header = array();
+    private $json_header = array('Content-Type' => 'application/json');
+
+    // Debug & Log
+    private $debug = TRUE;
+    private $log = FALSE;
+
+    // Cache on query select
+    private $cache = TRUE;
     
     function __construct() {
         $this->login_cookie();
