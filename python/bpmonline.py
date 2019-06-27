@@ -118,7 +118,7 @@ class BPMonline:
                     'isEnabled': True,
                     'filterType': 6
                 }
-            elif (Filters['items'] != None):
+            elif (Filters.get('items', None) != None):
                 if (isinstance(Filters['items'], dict)):
                     if (len(Filters['items']) > 0):
 
@@ -173,7 +173,7 @@ class BPMonline:
                                     }
                                 }
                             })
-            elif (Filters['filters'] != None):
+            elif (Filters.get('filters', None) != None):
                 Query['filters'] = Filters['filters']
         return Query
     
