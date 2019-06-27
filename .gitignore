@@ -4,4 +4,5 @@
 *.pyc
 /log/
 bpmonline.session.cookie
+bpmonline.session.bpmcsrf
 /__pycache__/
